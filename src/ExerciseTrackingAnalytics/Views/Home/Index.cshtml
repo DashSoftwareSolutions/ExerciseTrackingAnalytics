@@ -1,8 +1,44 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using ExerciseTrackingAnalytics.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row mb-4">
+    <div class="col text-center">
+        <h1 class="display-4">Welcome to Exercise Tracking Analytics</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        @if (SignInManager.IsSignedIn(User))
+        {
+            @* TODO: We need to check if we already have an access token *@
+
+            <h2>Getting Started</h2>
+
+            <p>
+                Click the button below to allow Exercise Tracking Analytics to connect to
+                your Strava Account.
+            </p>
+
+            <form id="form-connect-to-strava" method="post" asp-controller="Connect" asp-action="Connect">
+                <a href="javascript:void(0)" onclick="this.closest('form').submit(); return false;">
+                    <img src="~/images/btn_strava_connectwith_orange@2x.png" alt="Connect with Strava" />
+                </a>
+            </form>
+        }
+        else
+        {
+            <div>Log in to access your Strava data and see the reporting, analytics and insights.</div>
+        }
+    </div>
+
+    <div class="col">
+        <img src="~/images/woman_running_river_city_happy.jpeg" alt="Woman Running" style="width: 100%" />
+    </div>
 </div>

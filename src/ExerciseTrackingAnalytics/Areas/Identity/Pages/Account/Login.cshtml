@@ -1,5 +1,6 @@
 ﻿@page
 @model LoginModel
+@using ExerciseTrackingAnalytics.Security.Authorization.Strava
 
 @{
     ViewData["Title"] = "Log in";
@@ -69,7 +70,18 @@
                             <p>
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    if (provider.Name == Constants.AuthenticationScheme)
+                                    {
+                                        <input type="hidden" name="provider" value="@provider.Name" title="Log in using your Strava account" />
+
+                                        <a href="javascript:void(0)" onclick="this.closest('form').submit(); return false;">
+                                            <img src="~/images/btn_strava_connectwith_orange@2x.png" alt="Connect with Strava" width="200" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    }
                                 }
                             </p>
                         </div>

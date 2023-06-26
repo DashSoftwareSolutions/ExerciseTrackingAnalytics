@@ -17,20 +17,7 @@
     <div class="col">
         @if (SignInManager.IsSignedIn(User))
         {
-            @* TODO: We need to check if we already have an access token *@
-
-            <h2>Getting Started</h2>
-
-            <p>
-                Click the button below to allow Exercise Tracking Analytics to connect to
-                your Strava Account.
-            </p>
-
-            <form id="form-connect-to-strava" method="post" asp-controller="Connect" asp-action="Connect">
-                <a href="javascript:void(0)" onclick="this.closest('form').submit(); return false;">
-                    <img src="~/images/btn_strava_connectwith_orange@2x.png" alt="Connect with Strava" />
-                </a>
-            </form>
+            <div>You are logged in using Strava.  Yay!</div>
         }
         else
         {

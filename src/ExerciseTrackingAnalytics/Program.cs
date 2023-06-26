@@ -7,6 +7,8 @@ using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Security.Authentication;
 using ExerciseTrackingAnalytics.Security.Authorization;
+using ExerciseTrackingAnalytics.Security.Authorization.Strava;
+using StravaOAuth = ExerciseTrackingAnalytics.Security.Authorization.Strava.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,18 @@ builder.Services
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationClaimsPrincipalFactory>();
+
+// Strava OAuth
+builder.Services
+    .AddAuthentication()
+    .AddOAuth<StravaOAuthOptions, StravaOAuthHandler>(
+        StravaOAuth.AuthenticationScheme,
+        StravaOAuth.DisplayName,
+        (options) =>
+        {
+            options.ClientId = builder.Configuration["StravaClientId"];
+            options.ClientSecret = builder.Configuration["StravaClientSecret"];
+        });
 
 var app = builder.Build();
 

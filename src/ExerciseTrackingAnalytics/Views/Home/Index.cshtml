@@ -5,6 +5,7 @@
 
 @{
     ViewData["Title"] = "Home Page";
+    var accessToken = ViewBag.AccessToken as string;
 }
 
 <div class="row mb-4">
@@ -18,6 +19,24 @@
         @if (SignInManager.IsSignedIn(User))
         {
             <div>You are logged in using Strava.  Yay!</div>
+
+            @if (ViewBag.AuthProperties != null)
+            {
+                <h4>Authentication Properties</h4>
+
+                <dl>
+                    @foreach (var prop in ViewBag.AuthProperties)
+                    {
+                        <dt>@prop.Key</dt>
+                        <dd>@prop.Value</dd>
+                    }
+                </dl>
+            }
+
+            @if (accessToken != null)
+            {
+                <div>Access Token: @accessToken</div>
+            }
         }
         else
         {

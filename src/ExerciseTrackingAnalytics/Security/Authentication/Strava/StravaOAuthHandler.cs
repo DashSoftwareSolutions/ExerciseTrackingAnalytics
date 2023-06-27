@@ -38,6 +38,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
             using var response = await Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Context.RequestAborted);
+
             if (!response.IsSuccessStatusCode)
             {
                 await Log.UserProfileErrorAsync(Logger, response, Context.RequestAborted);

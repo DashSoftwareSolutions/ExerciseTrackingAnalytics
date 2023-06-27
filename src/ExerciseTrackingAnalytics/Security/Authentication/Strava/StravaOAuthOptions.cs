@@ -42,6 +42,26 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
             ClaimActions.MapJsonKey(StravaCustomClaimTypes.CreatedAt, "created_at");
             ClaimActions.MapJsonKey(StravaCustomClaimTypes.UpdatedAt, "updated_at");
             ClaimActions.MapJsonKey(StravaCustomClaimTypes.Premium, "premium");
+
+            // TODO/FIXME: First attempt to get user's access token and such
+            // May not represent best practice
+            // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0
+            SaveTokens = true; // normally you want this set to false
+
+            Events.OnCreatingTicket = (oAuthContext) =>
+            {
+                var tokens = oAuthContext.Properties.GetTokens().ToList();
+
+                tokens.Add(new AuthenticationToken()
+                {
+                    Name = "TicketCreated",
+                    Value = DateTime.UtcNow.ToString()
+                });
+
+                oAuthContext.Properties.StoreTokens(tokens);
+
+                return Task.CompletedTask;
+            };
         }
     }
 }

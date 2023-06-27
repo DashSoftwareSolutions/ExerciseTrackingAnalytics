@@ -1,6 +1,8 @@
-﻿using ExerciseTrackingAnalytics.Models;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using ExerciseTrackingAnalytics.Models;
+using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 namespace ExerciseTrackingAnalytics.Controllers
 {
@@ -13,8 +15,22 @@ namespace ExerciseTrackingAnalytics.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                var accessToken = await ControllerContext.HttpContext.GetTokenAsync(StravaAuthentication.AuthenticationScheme, "access_token");
+                var refreshToken = await ControllerContext.HttpContext.GetTokenAsync(StravaAuthentication.AuthenticationScheme, "refresh_token");
+                ViewBag.AccessToken = accessToken;
+                ViewBag.RefreshToken = refreshToken;
+            }
+
+            var authResult = await HttpContext.AuthenticateAsync();
+            if (authResult != null)
+            {
+                ViewBag.AuthProperties = authResult.Properties?.Items;
+            }
+
             return View();
         }
 

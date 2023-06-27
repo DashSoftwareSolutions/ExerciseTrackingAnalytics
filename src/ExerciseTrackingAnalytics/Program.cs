@@ -43,7 +43,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Identity
 builder.Services
-    .AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddDefaultIdentity<ApplicationUser>(options => { })
     .AddRoles<ApplicationRole>()
     .AddRoleManager<ApplicationRoleManager>()
     .AddUserManager<ApplicationUserManager>()

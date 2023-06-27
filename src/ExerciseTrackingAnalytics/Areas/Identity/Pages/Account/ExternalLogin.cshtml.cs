@@ -2,22 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using ExerciseTrackingAnalytics.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
+using ExerciseTrackingAnalytics.Models;
 
 namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
 {
@@ -138,13 +134,29 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                 // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+
+                _logger.LogInformation(
+                    "External Login user has the following claims: {claims}",
+                    JsonSerializer.Serialize(info.Principal.Claims.Select(c => new { c.Type, c.Value }).ToArray()));
+
+                var email = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var firstName = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value;
+                var lastName = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value;
+
+                var hasAnyDataToPrepopulate = !string.IsNullOrWhiteSpace(email) ||
+                    !string.IsNullOrWhiteSpace(firstName) ||
+                    !string.IsNullOrWhiteSpace(lastName);
+
+                if (hasAnyDataToPrepopulate)
                 {
                     Input = new InputModel
                     {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName,
                     };
                 }
+
                 return Page();
             }
         }

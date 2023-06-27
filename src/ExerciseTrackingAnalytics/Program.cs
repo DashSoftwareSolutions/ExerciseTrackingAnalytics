@@ -6,9 +6,9 @@ using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Security.Authentication;
+using ExerciseTrackingAnalytics.Security.Authentication.Strava;
 using ExerciseTrackingAnalytics.Security.Authorization;
-using ExerciseTrackingAnalytics.Security.Authorization.Strava;
-using StravaOAuth = ExerciseTrackingAnalytics.Security.Authorization.Strava.Constants;
+using StravaOAuth = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,14 +1,21 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿/*
+ * Adapted from: https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/blob/dev/src/AspNet.Security.OAuth.Strava/StravaAuthenticationHandler.cs
+ */
+/*
+* Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+* See https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers
+* for more information concerning the license and the contributors participating to this project.
+*/
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace ExerciseTrackingAnalytics.Security.Authorization.Strava
+namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
 {
     public partial class StravaOAuthHandler : OAuthHandler<StravaOAuthOptions>
     {
@@ -50,9 +57,6 @@ namespace ExerciseTrackingAnalytics.Security.Authorization.Strava
         /// <inheritdoc/>
         protected override string FormatScope([NotNull] IEnumerable<string> scopes)
             => string.Join(',', scopes);
-
-        public Task<HandleRequestResult> HandleOAuthCallbackAsync() =>
-            HandleRemoteAuthenticateAsync();
 
         private static partial class Log
         {

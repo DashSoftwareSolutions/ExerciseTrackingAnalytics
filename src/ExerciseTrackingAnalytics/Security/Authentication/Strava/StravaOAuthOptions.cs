@@ -50,14 +50,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
 
             Events.OnCreatingTicket = (oAuthContext) =>
             {
-                var tokens = oAuthContext.Properties.GetTokens().ToList();
-
-                tokens.Add(new AuthenticationToken()
-                {
-                    Name = "TicketCreated",
-                    Value = DateTime.UtcNow.ToString()
-                });
-
+                var tokens = oAuthContext.Properties.GetTokens().ToArray();
                 oAuthContext.Properties.StoreTokens(tokens);
 
                 return Task.CompletedTask;

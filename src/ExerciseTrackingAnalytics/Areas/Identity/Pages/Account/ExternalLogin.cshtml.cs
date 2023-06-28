@@ -131,11 +131,8 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                 // TODO/FIXME: Don't be logging tokens!  Just temporary for debuggin'
                 _logger.LogInformation("Access Tokens: {accessTokens}", JsonSerializer.Serialize(info.AuthenticationTokens));
 
-                // Include the access token in the properties
-                // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0
-                var props = new AuthenticationProperties();
-                props.StoreTokens(info.AuthenticationTokens);
-                props.IsPersistent = true;
+                // Save the user's tokens from the external login provider
+                await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
 
                 return LocalRedirect(returnUrl);
             }
@@ -206,9 +203,10 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
                         // TODO: Add other claims if needed
+                        // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0#map-user-data-keys-and-create-claims
 
                         // Include the access token in the properties
-                        // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0
+                        // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0#save-the-access-token
                         var props = new AuthenticationProperties();
                         props.StoreTokens(info.AuthenticationTokens);
                         props.IsPersistent = false;
@@ -232,7 +230,7 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                             return RedirectToPage("./RegisterConfirmation", new { Input.Email });
                         }
 
-                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                        await _signInManager.SignInAsync(user, props, info.LoginProvider);
                         return LocalRedirect(returnUrl);
                     }
                 }

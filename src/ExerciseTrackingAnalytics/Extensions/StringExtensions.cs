@@ -117,9 +117,7 @@ namespace ExerciseTrackingAnalytics.Extensions
                 .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(s => Guid.TryParse(s, out Guid parsed) ? parsed : (Guid?)null)
                 .Where(theGuid => theGuid.HasValue)
-#pragma warning disable CS8629 // Nullable value type may be null.
-                .Select(theGuid => theGuid.Value);
-#pragma warning restore CS8629 // Nullable value type may be null.
+                .Select(theGuid => theGuid!.Value);
         }
 
         public static IEnumerable<uint>? ParseCommaSeparatedIntegers(this string commaSeparatedIntegerList)
@@ -131,9 +129,7 @@ namespace ExerciseTrackingAnalytics.Extensions
                 .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(s => uint.TryParse(s, out uint parsed) ? parsed : (uint?)null)
                 .Where(theInt => theInt.HasValue)
-#pragma warning disable CS8629 // Nullable value type may be null.
-                .Select(theInt => theInt.Value);
-#pragma warning restore CS8629 // Nullable value type may be null.
+                .Select(theInt => theInt!.Value);
         }
 
         public static IEnumerable<uint>? ParseCommaSeparatedIntegers(this IEnumerable<string> commaSeparatedIntegerLists)

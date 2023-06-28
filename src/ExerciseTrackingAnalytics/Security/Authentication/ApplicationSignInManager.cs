@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.Extensions;
 
 namespace ExerciseTrackingAnalytics.Security.Authentication
 {
@@ -27,11 +28,27 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             return base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
         }
 
-        public override Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
+        public override async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
         {
             Logger.LogInformation("Overridden ExternalLoginSignInAsync() called");
 
-            return base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
+            //return base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
+
+            var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
+
+            if (user == null)
+            {
+                return SignInResult.Failed;
+            }
+
+            var error = await PreSignInCheck(user);
+            
+            if (error != null)
+            {
+                return error;
+            }
+
+            return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
         }
 
         public override Task<IdentityResult> UpdateExternalAuthenticationTokensAsync(ExternalLoginInfo externalLogin)

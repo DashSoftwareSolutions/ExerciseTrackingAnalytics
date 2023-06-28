@@ -6,6 +6,8 @@
 @{
     ViewData["Title"] = "Home Page";
     var accessToken = ViewBag.AccessToken as string;
+    var accessTokenExpiration = ViewBag.AccessTokenExpiration as string;
+    var refreshToken = ViewBag.RefreshToken as string;
 }
 
 <div class="row mb-4">
@@ -20,22 +22,19 @@
         {
             <div>You are logged in using Strava.  Yay!</div>
 
-            @if (ViewBag.AuthProperties != null)
-            {
-                <h4>Authentication Properties</h4>
-
-                <dl>
-                    @foreach (var prop in ViewBag.AuthProperties)
-                    {
-                        <dt>@prop.Key</dt>
-                        <dd>@prop.Value</dd>
-                    }
-                </dl>
-            }
-
             @if (accessToken != null)
             {
                 <div>Access Token: @accessToken</div>
+            }
+
+            @if (accessTokenExpiration != null)
+            {
+                <div>Access Token Expires: @accessTokenExpiration</div>
+            }
+
+            @if (refreshToken != null)
+            {
+                <div>Access Token: @refreshToken</div>
             }
         }
         else

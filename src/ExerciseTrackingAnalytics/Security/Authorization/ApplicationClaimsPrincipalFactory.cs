@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using IdentityModel;
 using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.Extensions;
 
 namespace ExerciseTrackingAnalytics.Security.Authorization
 {
@@ -25,25 +25,41 @@ namespace ExerciseTrackingAnalytics.Security.Authorization
             var hasFirstName = !string.IsNullOrWhiteSpace(user.FirstName);
             var hasLastName = !string.IsNullOrWhiteSpace(user.LastName);
 
-#pragma warning disable CS8604 // Possible null reference argument.
             if (hasFirstName)
             {
-                claims.Add(new Claim(JwtClaimTypes.GivenName, user.FirstName));
-                claims.Add(new Claim(ClaimTypes.GivenName, user.FirstName));
+                claims.Add(new Claim(ClaimTypes.GivenName, user.FirstName!));
             }
 
             if (hasLastName)
             {
-                claims.Add(new Claim(JwtClaimTypes.FamilyName, user.LastName));
-                claims.Add(new Claim(ClaimTypes.Surname, user.LastName));
+                claims.Add(new Claim(ClaimTypes.Surname, user.LastName!));
             }
-#pragma warning restore CS8604 // Possible null reference argument.
 
             if (hasFirstName && hasLastName)
             {
                 var fullName = $"{user.FirstName} {user.LastName}";
-                claims.Add(new Claim(JwtClaimTypes.Name, fullName));
                 claims.Add(new Claim(ClaimTypes.Name, fullName));
+            }
+
+            if (user.Tokens.HasAny())
+            {
+                foreach (var token in user.Tokens!)
+                {
+                    switch (token.Name)
+                    {
+                        case "access_token":
+                        case "refresh_token":
+                            claims.Add(new Claim($"{token.LoginProvider.ToLower()}_{token.Name}", token.Value));
+                            break;
+
+                        case "expires_at":
+                            claims.Add(new Claim($"{token.LoginProvider.ToLower()}_access_token_{token.Name}", token.Value));
+                            break;
+
+                        default:
+                            continue;
+                    }
+                }
             }
 
             identity?.AddClaims(claims);

@@ -194,9 +194,11 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
                 var result = await _userManager.CreateAsync(user);
+
                 if (result.Succeeded)
                 {
                     result = await _userManager.AddLoginAsync(user, info);
+                    result = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
 
                     if (result.Succeeded)
                     {
@@ -204,12 +206,6 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
 
                         // TODO: Add other claims if needed
                         // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0#map-user-data-keys-and-create-claims
-
-                        // Include the access token in the properties
-                        // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0#save-the-access-token
-                        var props = new AuthenticationProperties();
-                        props.StoreTokens(info.AuthenticationTokens);
-                        props.IsPersistent = false;
 
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -230,7 +226,8 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                             return RedirectToPage("./RegisterConfirmation", new { Input.Email });
                         }
 
-                        await _signInManager.SignInAsync(user, props, info.LoginProvider);
+                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+
                         return LocalRedirect(returnUrl);
                     }
                 }

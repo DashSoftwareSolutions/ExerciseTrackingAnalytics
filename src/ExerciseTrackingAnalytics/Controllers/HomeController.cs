@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Authentication;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using ExerciseTrackingAnalytics.Models;
 using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
@@ -15,20 +15,26 @@ namespace ExerciseTrackingAnalytics.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             if (User?.Identity?.IsAuthenticated ?? false)
             {
-                var accessToken = await ControllerContext.HttpContext.GetTokenAsync(StravaAuthentication.AuthenticationScheme, "access_token");
-                var refreshToken = await ControllerContext.HttpContext.GetTokenAsync(StravaAuthentication.AuthenticationScheme, "refresh_token");
+                var accessToken = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token")?.Value;
+                var refreshToken = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_refresh_token")?.Value;
+                var accessTokenExpirationString = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token_expires_at")?.Value;
+
                 ViewBag.AccessToken = accessToken;
                 ViewBag.RefreshToken = refreshToken;
-            }
 
-            var authResult = await HttpContext.AuthenticateAsync();
-            if (authResult != null)
-            {
-                ViewBag.AuthProperties = authResult.Properties?.Items;
+                if (accessTokenExpirationString != null &&
+                    DateTime.TryParse(
+                        accessTokenExpirationString,
+                        CultureInfo.CurrentCulture,
+                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                        out var accessTokenExpiration))
+                {
+                    ViewBag.AccessTokenExpiration = accessTokenExpiration.ToString("o");
+                }
             }
 
             return View();

@@ -8,6 +8,7 @@ using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Security.Authentication;
 using ExerciseTrackingAnalytics.Security.Authentication.Strava;
 using ExerciseTrackingAnalytics.Security.Authorization;
+using ExerciseTrackingAnalytics.Services;
 using StravaOAuth = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,9 +51,6 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-
-builder.Services.AddControllersWithViews();
-
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationClaimsPrincipalFactory>();
 
 // Strava OAuth
@@ -66,6 +64,14 @@ builder.Services
             options.ClientId = builder.Configuration["StravaClientId"];
             options.ClientSecret = builder.Configuration["StravaClientSecret"];
         });
+
+// Strava API Service and its dependencies
+builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IStravaApiService, StravaApiService>();
+
+// ASP.NET MVC Stuff
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 

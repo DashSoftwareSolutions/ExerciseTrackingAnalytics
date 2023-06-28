@@ -36,6 +36,8 @@
             {
                 <div>Access Token: @refreshToken</div>
             }
+
+            <button id="sync_button">Sync Activities</button>
         }
         else
         {
@@ -47,3 +49,28 @@
         <img src="~/images/woman_running_river_city_happy.jpeg" alt="Woman Running" style="width: 100%" />
     </div>
 </div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            $('#sync_button').on('click', (e) => {
+                e.preventDefault();
+                console.log('Let\'s sync the activities!');
+
+                fetch('/api/strava-activity-sync', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(() => {
+                        console.log('Done!');
+                    })
+                    .catch((error) => {
+                        console.log('Error syncing the activities:', error);
+                    });
+            });
+        })();
+    </script>
+}

@@ -46,12 +46,10 @@ builder.Services
     .AddDefaultIdentity<ApplicationUser>(options => { })
     .AddRoles<ApplicationRole>()
     .AddRoleManager<ApplicationRoleManager>()
-    .AddSignInManager<ApplicationSignInManager>()
     .AddUserManager<ApplicationUserManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<SignInManager<ApplicationUser>, ApplicationSignInManager>();
 
 builder.Services.AddControllersWithViews();
 

@@ -6,6 +6,8 @@ namespace ExerciseTrackingAnalytics.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
+        public DbSet<UserActivity>? UserActivities { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -15,6 +17,7 @@ namespace ExerciseTrackingAnalytics.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Identity Stuff
             modelBuilder.Entity<ApplicationUser>(b =>
             {
                 // Each User can have many UserClaims
@@ -41,6 +44,19 @@ namespace ExerciseTrackingAnalytics.Data
                     .HasForeignKey(ur => ur.UserId)
                     .IsRequired();
             });
+
+            // Activities
+            modelBuilder.Entity<UserActivity>()
+                .HasIndex(a => a.StravaActivityId)
+                .IsUnique();
+
+            modelBuilder.Entity<UserActivity>()
+                .Property(a => a.RecordInsertDateUtc)
+                .HasColumnType("TIMESTAMP")
+                .HasDefaultValueSql(GET_UTC_TIMESTAMP)
+                .ValueGeneratedOnAdd();
         }
+
+        private const string GET_UTC_TIMESTAMP = "now() AT TIME ZONE 'UTC'";
     }
 }

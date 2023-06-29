@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ExerciseTrackingAnalytics.Extensions;
 
@@ -25,10 +25,17 @@ namespace ExerciseTrackingAnalytics.Models
         [MaxLength(32)]
         public string SportType { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Activity Start Date UTC
+        /// </summary>
+        /// <remarks>
+        /// <strong>NOTE:</strong> We <em>CANNOT</em> do our normal thing to set <c>Kind</c> to <c>Utc</c> here.
+        /// EF / Npgsql are apparently insisting on type `TIMESTAMPTZ` if `Kind` is `Utc` and we're deliberately using
+        /// type `TIMESTAMP` (i.e. `TIMESTAMP WITHOUT TIME ZONE`).
+        /// </remarks>
         [Required]
-        [Column(TypeName ="TIMESTAMP")]
-        public DateTime StartDateUtc { get => _StartDateUtc; set => _StartDateUtc = value.AsUtc(); }
-        private DateTime _StartDateUtc;
+        [Column(TypeName = "TIMESTAMP")]
+        public DateTime StartDateUtc { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         [MaxLength(64)]

@@ -23,7 +23,7 @@ namespace ExerciseTrackingAnalytics.Controllers
             var result = await _syncService.SyncRecentActivitiesAsync();
 
             return result.IsSuccessful
-                ? Ok()
+                ? Json(new { Message = $"{result.NumSyncedActivities} recent Strava Activities successfully synced" })
                 : Problem(
                     "We were unable to sync recent Strava Activities due to an unexpected system error.",
                     instance: HttpContext.Request.GetDisplayUrl(),

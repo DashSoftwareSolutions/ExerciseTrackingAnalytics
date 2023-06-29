@@ -1,4 +1,5 @@
 ﻿using ExerciseTrackingAnalytics.Data.Repositories;
+using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
 
 namespace ExerciseTrackingAnalytics.Services
@@ -24,15 +25,15 @@ namespace ExerciseTrackingAnalytics.Services
 
         public async Task<StravaSyncStatus> SyncRecentActivitiesAsync()
         {
-            _logger.LogInformation("Fethcing recent Strava Activities...");
+            _logger.LogInformation("Fetching recent Strava Activities ...");
 
             var syncOperationResult = new StravaSyncStatus() {  IsSuccessful = false, NumSyncedActivities = 0 };
-            IEnumerable<StravaActivity> recentStravaActivities;
+            StravaActivity[] recentStravaActivities;
 
             try
             {
-                recentStravaActivities = await _stravaApi.GetRecentActivitiesAsync();
-                _logger.LogInformation("Found {count} recent activities", recentStravaActivities.Count());
+                recentStravaActivities = (await _stravaApi.GetRecentActivitiesAsync()).ToArray();
+                _logger.LogInformation("Found {count} recent activities", recentStravaActivities.Length);
             }
             catch (Exception ex)
             {
@@ -40,7 +41,68 @@ namespace ExerciseTrackingAnalytics.Services
                 return syncOperationResult;
             }
 
+            foreach (var activity in recentStravaActivities)
+            {
+                activity.IsSynced = await _repository.ExistsByStravaIdAsync(activity.Id);
+            }
 
+            if (recentStravaActivities.Any(a => !a.IsSynced))
+            {
+                var numSyncedSuccessfully = 0;
+
+                var unsyncedActivities = recentStravaActivities
+                    .Where(a => !a.IsSynced)
+                    .OrderBy(a => a.StartDateUtc)
+                    .ToArray();
+
+                _logger.LogInformation("{count} new Activities have not yet been synced to the database.", unsyncedActivities.Length);
+
+                try
+                {
+                    foreach (var unsyncedActivity in unsyncedActivities)
+                    {
+                        _logger.LogInformation("Fetching details to hydrate Calories for Activity ID {stravaActivityId} ... ", unsyncedActivity.Id);
+
+                        await _stravaApi.HydrateActivityCaloriesAsync(unsyncedActivity);
+
+                        _logger.LogInformation("Writing Activity ID {stravaActivityId} to the database ... ", unsyncedActivity.Id);
+
+                        var userActivity = new UserActivity()
+                        {
+                            UserId = _contextAccessor.HttpContext!.User.GetUserId(),
+                            StravaActivityId = unsyncedActivity.Id,
+                            Name = unsyncedActivity.Name ?? "Not Specified",
+                            SportType = unsyncedActivity.SportType ?? "Unknown",
+                            StartDateUtc = DateTime.SpecifyKind(unsyncedActivity.StartDateUtc, DateTimeKind.Unspecified), // EF + Npgsql are insisting that `Kind` has to be `Unspecified` to write to `TIMESTAMP` column (it wants type `TIMESTAMPTZ` if `Kind` is `Utc`)
+                            TimeZone = !string.IsNullOrWhiteSpace(unsyncedActivity.Timezone)
+                                ? unsyncedActivity.Timezone.Split(new char[] { ' ' })[1] // Strava sends values like [Offset] [TimeZoneId], e.g. "(GMT-08:00) America/Los_Angeles"
+                                : "America/Los_Angeles",
+                            Calories = unsyncedActivity.Calories,
+                            DistanceInMeters = unsyncedActivity.Distance,
+                            ElapsedTimeInSeconds = unsyncedActivity.ElapsedTimeInSeconds,
+                            MovingTimeInSeconds = unsyncedActivity.MovingTimeInSeconds,
+                            TotalElevationGainInMeters = unsyncedActivity.TotalElevationGainInMeters,
+                        };
+
+                        var savedActivity = await _repository.InsertAsync(userActivity);
+
+                        if (savedActivity != null)
+                            ++numSyncedSuccessfully;
+                    }
+
+                    syncOperationResult.IsSuccessful = numSyncedSuccessfully == unsyncedActivities.Length;
+                    syncOperationResult.NumSyncedActivities = numSyncedSuccessfully;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error syncing recent Strava Activities");
+                    return syncOperationResult;
+                }
+            }
+            else
+            {
+                _logger.LogInformation("All recent activities have been synced to the database");
+            }
 
             return syncOperationResult;
         }

@@ -128,8 +128,6 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-                // TODO/FIXME: Don't be logging tokens!  Just temporary for debuggin'
-                _logger.LogInformation("Access Tokens: {accessTokens}", JsonSerializer.Serialize(info.AuthenticationTokens));
 
                 // Save the user's tokens from the external login provider
                 await _signInManager.UpdateExternalAuthenticationTokensAsync(info);

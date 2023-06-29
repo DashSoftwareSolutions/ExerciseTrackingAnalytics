@@ -30,13 +30,7 @@ namespace ExerciseTrackingAnalytics.Services
             int pageNumber = 1,
             int pageSize = 30)
         {
-            var accessToken = _contextAccessor.HttpContext?.User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token")?.Value;
-
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                throw new InvalidOperationException("User access token could not be obtained from the context.  Unable to query Strava for recent activities.");
-            }
-
+            var accessToken = GetAccessToken();
             var httpClient = _httpClientFactory.CreateClient("Strava");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
@@ -78,9 +72,43 @@ namespace ExerciseTrackingAnalytics.Services
             }
         }
 
-        public Task HydrateActivityCaloriesAsync(StravaActivity activity)
+        public async Task HydrateActivityCaloriesAsync(StravaActivity activity)
         {
-            throw new NotImplementedException();
+            var accessToken = GetAccessToken();
+            var httpClient = _httpClientFactory.CreateClient("Strava");
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+            try
+            {
+                var requestUrl = $"{_apiBaseUrl}/activities/{activity.Id}";
+                var response = await httpClient.GetAsync(requestUrl);
+                var responseBodyContent = await response.Content.ReadAsStringAsync();
+                var activityDetail = JsonConvert.DeserializeObject<StravaActivity>(responseBodyContent);
+                activity.Calories = activityDetail?.Calories ?? default;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP Error encountered while querying Strava for details of Activity ID {stravaActivityId}", activity.Id);
+                var status = ex.StatusCode.HasValue ? $"{(int)ex.StatusCode} {ex.StatusCode}" : "<UNKNOWN>";
+                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for details of Activity ID {activity.Id} due to an API error.  API returned HTTP Response status {status}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Non-HTTP Error encountered while querying Strava for details of Activity ID {stravaActivityId}", activity.Id);
+                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for details of Activity ID {activity.Id} due to an internal system error.");
+            }
+        }
+
+        private string GetAccessToken()
+        {
+            var accessToken = _contextAccessor.HttpContext?.User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token")?.Value;
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                throw new InvalidOperationException("User access token could not be obtained from the context.  Unable to query Strava for recent activities.");
+            }
+
+            return accessToken;
         }
     }
 }

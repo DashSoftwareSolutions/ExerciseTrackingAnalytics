@@ -70,9 +70,10 @@ builder.Services
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IStravaApiService, StravaApiService>();
+builder.Services.AddScoped<IStravaActivitySyncService, StravaActivitySyncService>();
 
 // Database Repositories
-builder.Services.AddSingleton<IUserActivityRepository, UserActivityRepository>();
+builder.Services.AddScoped<IUserActivityRepository, UserActivityRepository>();
 
 // ASP.NET MVC Stuff
 builder.Services.AddControllersWithViews();

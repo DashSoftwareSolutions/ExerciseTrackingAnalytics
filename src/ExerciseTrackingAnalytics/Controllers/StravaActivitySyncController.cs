@@ -10,39 +10,26 @@ namespace ExerciseTrackingAnalytics.Controllers
     [Authorize]
     public class StravaActivitySyncController : Controller
     {
-        private readonly ILogger<StravaActivitySyncController> _logger;
-        private readonly IStravaApiService _stravaApiService;
+        private readonly IStravaActivitySyncService _syncService;
 
-        public StravaActivitySyncController(
-            ILogger<StravaActivitySyncController> logger,
-            IStravaApiService stravaApiService)
+        public StravaActivitySyncController(IStravaActivitySyncService syncService)
         {
-            _logger = logger;
-            _stravaApiService = stravaApiService;
+            _syncService = syncService;
         }
 
         [HttpPost]
         public async Task<IActionResult> SyncStravaActivities()
         {
-            _logger.LogInformation("Syncing Strava Activities...");
+            var result = await _syncService.SyncRecentActivitiesAsync();
 
-            try
-            {
-                var results = await _stravaApiService.GetRecentActivitiesAsync();
-                _logger.LogInformation("Found {count} recent activities", results.Count());
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error syncing Strava Activities");
-
-                return Problem(
+            return result.IsSuccessful
+                ? Ok()
+                : Problem(
                     "We were unable to sync recent Strava Activities due to an unexpected system error.",
                     instance: HttpContext.Request.GetDisplayUrl(),
                     statusCode: StatusCodes.Status500InternalServerError,
                     title: "Error Syncing Recent Strava Activities",
                     type: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500");
-            }
         }
     }
 }

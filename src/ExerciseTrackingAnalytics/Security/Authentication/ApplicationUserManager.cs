@@ -1,15 +1,21 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Dapper;
+using Npgsql;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
-using System.Text.Json;
+using ExerciseTrackingAnalytics.Data;
 
 namespace ExerciseTrackingAnalytics.Security.Authentication
 {
     public class ApplicationUserManager : UserManager<ApplicationUser>
     {
+        private readonly ApplicationDbContext _dbContext;
+
         public ApplicationUserManager(
+            ApplicationDbContext dbContext,
             IUserStore<ApplicationUser> store,
             IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<ApplicationUser> passwordHasher,
@@ -21,6 +27,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             ILogger<UserManager<ApplicationUser>> logger)
             : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
         {
+            _dbContext = dbContext;
         }
 
         public string? GetUserFirstName(ClaimsPrincipal user)
@@ -79,56 +86,183 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             // This kind of sucks.
             // For some reason, it is not expanding `user.Tokens` when the User is fetched.
             // So, we have to do it ourselves here.
-            // And, even worse, we cannot get a collection of them all at once; we can only get them one by one.  Sigh.
             // Don't know of it's ASP.NET Identity's fault or Entity Frameworks's fault, but one of those suckas is to blame.
+            // It seems to be a combination: like my customized ASP.NET Identity / EF setup doesn't seem to really know about User Tokens
             if (!user.Tokens.HasAny())
             {
-                var tokens = await GetTokens(user, loginProvider);
+                var tokens = await GetTokens(user.Id, loginProvider);
 
                 if (tokens.Any())
                 {
-                    user.Tokens = tokens;
+                    user.Tokens = tokens.ToArray();
                 }
             }
 
             return user;
         }
 
-        private async Task<List<IdentityUserToken<Guid>>> GetTokens(ApplicationUser user, string loginProvider)
+        public override async Task<string> GetAuthenticationTokenAsync(ApplicationUser user, string loginProvider, string tokenName)
         {
-            var tokens = new List<IdentityUserToken<Guid>>();
+            ThrowIfDisposed();
 
-            var userAuthnTokenStore = (Store as IUserAuthenticationTokenStore<ApplicationUser>);
-
-            if (userAuthnTokenStore == null)
+            if (user == null)
             {
-                Logger.LogWarning("Store backing User Manager does not support retrieval of User Authentication Tokens.");
-                return tokens;
+                throw new ArgumentNullException(nameof(user));
             }
 
-            await TryGetAndAddToken(tokens, userAuthnTokenStore!, user, loginProvider, "access_token");
-            await TryGetAndAddToken(tokens, userAuthnTokenStore!, user, loginProvider, "expires_at");
-            await TryGetAndAddToken(tokens, userAuthnTokenStore!, user, loginProvider, "refresh_token");
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
 
-            return tokens;
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
+            {
+                return await connection.QueryFirstOrDefaultAsync<string>(@"
+  SELECT ""UserId""
+        ,""LoginProvider""
+        ,""Name""
+        ,""Value""
+    FROM ""AspNetUserTokens""
+   WHERE ""UserId"" = @userId
+     AND ""LoginProvider"" = @loginProvider
+     AND ""Name"" = @tokenName;
+",
+                    new { userId = user.Id, loginProvider, tokenName });
+            }
         }
 
-        private async Task<bool> TryGetAndAddToken(
-            List<IdentityUserToken<Guid>> tokens,
-            IUserAuthenticationTokenStore<ApplicationUser> userAuthnTokenStore,
-            ApplicationUser user,
-            string loginProvider,
-            string tokenName)
+        public override async Task<IdentityResult> SetAuthenticationTokenAsync(ApplicationUser user, string loginProvider, string tokenName, string tokenValue)
         {
-            var token = await userAuthnTokenStore!.GetTokenAsync(user, loginProvider, tokenName, CancellationToken);
+            ThrowIfDisposed();
 
-            if (token != null)
+            if (user == null)
             {
-                tokens.Add(new IdentityUserToken<Guid>() { LoginProvider = loginProvider, Name = tokenName, Value = token });
-                return true;
+                throw new ArgumentNullException(nameof(user));
             }
 
-            return false;
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            Logger.LogInformation(
+                "Setting authentication token for User ID {userId} and Login Provider {loginProvider}: {tokenName} = {tokenValue}",
+                user.Id,
+                loginProvider,
+                tokenName,
+                tokenValue);
+
+            try
+            {
+                using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
+                {
+                    var rowsAffected = await connection.ExecuteAsync(@"
+INSERT INTO ""AspNetUserTokens"" ( ""UserId"", ""LoginProvider"", ""Name"", ""Value"" )
+VALUES ( @userId, @loginProvider, @tokenName, @tokenValue )
+ON CONFLICT ( ""UserId"", ""LoginProvider"", ""Name"" )
+DO UPDATE SET ""Value"" = @tokenValue;
+",
+                        new { userId = user.Id, loginProvider, tokenName, tokenValue });
+
+                    return rowsAffected == 1
+                        ? IdentityResult.Success
+                        : IdentityResult.Failed();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    ex,
+                    "Error setting authentication token {tokenName} for User ID {userId} and Login Provider {loginProvider}",
+                    tokenName,
+                    user.Id,
+                    loginProvider);
+
+                return IdentityResult.Failed();
+            }
+        }
+
+        private async Task<IEnumerable<IdentityUserToken<Guid>>> GetTokens(Guid userId, string loginProvider)
+        {
+            using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
+            {
+                return await connection.QueryAsync<IdentityUserToken<Guid>>(@"
+  SELECT ""UserId""
+        ,""LoginProvider""
+        ,""Name""
+        ,""Value""
+    FROM ""AspNetUserTokens""
+   WHERE ""UserId"" = @userId
+     AND ""LoginProvider"" = @loginProvider
+ORDER BY ""Name"";
+",
+                    new { userId, loginProvider });
+            }
+        }
+
+        public override async Task<IdentityResult> RemoveAuthenticationTokenAsync(ApplicationUser user, string loginProvider, string tokenName)
+        {
+            ThrowIfDisposed();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            Logger.LogInformation(
+                "Removing authentication token {tokenName} for User ID {userId} and Login Provider {loginProvider}",
+                tokenName,
+                user.Id,
+                loginProvider);
+
+            try
+            {
+                using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
+                {
+                    var rowsAffected = await connection.ExecuteAsync(@"
+ DELETE FROM ""AspNetUserTokens""
+       WHERE ""UserId"" = @userId
+         AND ""LoginProvider"" = @loginProvider
+         AND ""Name"" = @tokenName;
+",
+                        new { userId = user.Id, loginProvider, tokenName });
+
+                    return rowsAffected == 1
+                        ? IdentityResult.Success
+                        : IdentityResult.Failed();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    ex,
+                    "Error removing authentication token {tokenName} for User ID {userId} and Login Provider {loginProvider}",
+                    tokenName,
+                    user.Id,
+                    loginProvider);
+
+                return IdentityResult.Failed();
+            }
         }
     }
 }

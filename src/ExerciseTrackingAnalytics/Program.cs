@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
 using ExerciseTrackingAnalytics.Data;
+using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Security.Authentication;
@@ -69,6 +70,9 @@ builder.Services
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IStravaApiService, StravaApiService>();
+
+// Database Repositories
+builder.Services.AddSingleton<IUserActivityRepository, UserActivityRepository>();
 
 // ASP.NET MVC Stuff
 builder.Services.AddControllersWithViews();

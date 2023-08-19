@@ -1,4 +1,4 @@
-﻿namespace ExerciseTrackingAnalytics.Models
+﻿namespace ExerciseTrackingAnalytics.Models.Strava
 {
     /// <summary>
     /// Represents the Strava Athlete (User) association on an owned resource such as Activity

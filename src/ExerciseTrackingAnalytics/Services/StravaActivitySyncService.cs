@@ -1,6 +1,8 @@
 ﻿using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.Models.Strava;
+using static ExerciseTrackingAnalytics.Constants;
 
 namespace ExerciseTrackingAnalytics.Services
 {
@@ -43,7 +45,7 @@ namespace ExerciseTrackingAnalytics.Services
 
             foreach (var activity in recentStravaActivities)
             {
-                activity.IsSynced = await _repository.ExistsByStravaIdAsync(activity.Id);
+                activity.IsSynced = await _repository.ExistsByExternalAppIdAsync(ExerciseTrackingApp.Strava, activity.Id);
             }
 
             if (recentStravaActivities.Any(a => !a.IsSynced))
@@ -70,7 +72,8 @@ namespace ExerciseTrackingAnalytics.Services
                         var userActivity = new UserActivity()
                         {
                             UserId = _contextAccessor.HttpContext!.User.GetUserId(),
-                            StravaActivityId = unsyncedActivity.Id,
+                            ExternalApp = ExerciseTrackingApp.Strava,
+                            ExternalAppActivityId = unsyncedActivity.Id,
                             Name = unsyncedActivity.Name ?? "Not Specified",
                             SportType = unsyncedActivity.SportType ?? "Unknown",
                             StartDateUtc = DateTime.SpecifyKind(unsyncedActivity.StartDateUtc, DateTimeKind.Unspecified), // EF + Npgsql are insisting that `Kind` has to be `Unspecified` to write to `TIMESTAMP` column (it wants type `TIMESTAMPTZ` if `Kind` is `Utc`)
@@ -79,6 +82,8 @@ namespace ExerciseTrackingAnalytics.Services
                                 : "America/Los_Angeles",
                             Calories = unsyncedActivity.Calories,
                             DistanceInMeters = unsyncedActivity.Distance,
+                            DistanceInMiles = unsyncedActivity.Distance * MilesPerMeter,
+                            DistanceOriginalUnit = DistanceUnit.Meters,
                             ElapsedTimeInSeconds = unsyncedActivity.ElapsedTimeInSeconds,
                             MovingTimeInSeconds = unsyncedActivity.MovingTimeInSeconds,
                             TotalElevationGainInMeters = unsyncedActivity.TotalElevationGainInMeters,

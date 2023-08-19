@@ -14,9 +14,11 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
             _logger = logger;
         }
 
-        public Task<bool> ExistsByStravaIdAsync(long stravaActivityId)
+        public Task<bool> ExistsByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId)
         {
-            return _db.UserActivities!.AnyAsync(a => a.StravaActivityId == stravaActivityId);
+            return _db.UserActivities!.AnyAsync(a =>
+                a.ExternalApp == externalApp &&
+                a.ExternalAppActivityId == externalAppActivityId);
         }
 
         public Task<UserActivity?> GetByIdAsync(long id)
@@ -24,9 +26,11 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
             return _db.UserActivities!.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public Task<UserActivity?> GetByStravaId(long stravaActivityId)
+        public Task<UserActivity?> GetByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId)
         {
-            return _db.UserActivities!.FirstOrDefaultAsync(a => a.StravaActivityId == stravaActivityId);
+            return _db.UserActivities!.FirstOrDefaultAsync(a =>
+                a.ExternalApp == externalApp &&
+                a.ExternalAppActivityId == externalAppActivityId);
         }
 
         public async Task<UserActivity?> InsertAsync(UserActivity userActivity)

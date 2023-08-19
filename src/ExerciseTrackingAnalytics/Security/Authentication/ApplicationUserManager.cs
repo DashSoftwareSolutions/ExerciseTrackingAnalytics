@@ -5,8 +5,8 @@ using Microsoft.Extensions.Options;
 using Dapper;
 using Npgsql;
 using ExerciseTrackingAnalytics.Extensions;
-using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Data;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Security.Authentication
 {
@@ -123,15 +123,15 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
             {
                 return await connection.QueryFirstOrDefaultAsync<string>(@"
-  SELECT ""UserId""
-        ,""LoginProvider""
-        ,""Name""
-        ,""Value""
-    FROM ""AspNetUserTokens""
-   WHERE ""UserId"" = @userId
-     AND ""LoginProvider"" = @loginProvider
-     AND ""Name"" = @tokenName;
-",
+          SELECT ""UserId""
+                ,""LoginProvider""
+                ,""Name""
+                ,""Value""
+            FROM ""AspNetUserTokens""
+           WHERE ""UserId"" = @userId
+             AND ""LoginProvider"" = @loginProvider
+             AND ""Name"" = @tokenName;
+        ",
                     new { userId = user.Id, loginProvider, tokenName });
             }
         }
@@ -167,11 +167,11 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
                 using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
                 {
                     var rowsAffected = await connection.ExecuteAsync(@"
-INSERT INTO ""AspNetUserTokens"" ( ""UserId"", ""LoginProvider"", ""Name"", ""Value"" )
-VALUES ( @userId, @loginProvider, @tokenName, @tokenValue )
-ON CONFLICT ( ""UserId"", ""LoginProvider"", ""Name"" )
-DO UPDATE SET ""Value"" = @tokenValue;
-",
+        INSERT INTO ""AspNetUserTokens"" ( ""UserId"", ""LoginProvider"", ""Name"", ""Value"" )
+        VALUES ( @userId, @loginProvider, @tokenName, @tokenValue )
+        ON CONFLICT ( ""UserId"", ""LoginProvider"", ""Name"" )
+        DO UPDATE SET ""Value"" = @tokenValue;
+        ",
                         new { userId = user.Id, loginProvider, tokenName, tokenValue });
 
                     return rowsAffected == 1
@@ -192,20 +192,20 @@ DO UPDATE SET ""Value"" = @tokenValue;
             }
         }
 
-        private async Task<IEnumerable<IdentityUserToken<Guid>>> GetTokens(Guid userId, string loginProvider)
+        private async Task<IEnumerable<ApplicationUserToken>> GetTokens(Guid userId, string loginProvider)
         {
             using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
             {
-                return await connection.QueryAsync<IdentityUserToken<Guid>>(@"
-  SELECT ""UserId""
-        ,""LoginProvider""
-        ,""Name""
-        ,""Value""
-    FROM ""AspNetUserTokens""
-   WHERE ""UserId"" = @userId
-     AND ""LoginProvider"" = @loginProvider
-ORDER BY ""Name"";
-",
+                return await connection.QueryAsync<ApplicationUserToken>(@"
+          SELECT ""UserId""
+                ,""LoginProvider""
+                ,""Name""
+                ,""Value""
+            FROM ""AspNetUserTokens""
+           WHERE ""UserId"" = @userId
+             AND ""LoginProvider"" = @loginProvider
+        ORDER BY ""Name"";
+        ",
                     new { userId, loginProvider });
             }
         }
@@ -240,11 +240,11 @@ ORDER BY ""Name"";
                 using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
                 {
                     var rowsAffected = await connection.ExecuteAsync(@"
- DELETE FROM ""AspNetUserTokens""
-       WHERE ""UserId"" = @userId
-         AND ""LoginProvider"" = @loginProvider
-         AND ""Name"" = @tokenName;
-",
+         DELETE FROM ""AspNetUserTokens""
+               WHERE ""UserId"" = @userId
+                 AND ""LoginProvider"" = @loginProvider
+                 AND ""Name"" = @tokenName;
+        ",
                         new { userId = user.Id, loginProvider, tokenName });
 
                     return rowsAffected == 1

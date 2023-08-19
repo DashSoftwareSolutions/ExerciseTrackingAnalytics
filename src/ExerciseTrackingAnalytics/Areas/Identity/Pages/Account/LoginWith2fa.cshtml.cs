@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using ExerciseTrackingAnalytics.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
 {

@@ -5,12 +5,12 @@ using Serilog;
 using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
-using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Security.Authentication;
 using ExerciseTrackingAnalytics.Security.Authentication.Strava;
 using ExerciseTrackingAnalytics.Security.Authorization;
 using ExerciseTrackingAnalytics.Services;
 using StravaOAuth = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 

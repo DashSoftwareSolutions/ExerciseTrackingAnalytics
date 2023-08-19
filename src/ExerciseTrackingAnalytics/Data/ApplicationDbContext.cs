@@ -1,10 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+    public class ApplicationDbContext
+        : IdentityDbContext<
+            ApplicationUser,
+            ApplicationRole,
+            Guid,
+            ApplicationUserClaim,
+            ApplicationUserRole,
+            ApplicationUserLogin,
+            ApplicationRoleClaim,
+            ApplicationUserToken>
     {
         public DbSet<UserActivity>? UserActivities { get; set; }
 
@@ -47,7 +57,22 @@ namespace ExerciseTrackingAnalytics.Data
 
             // Activities
             modelBuilder.Entity<UserActivity>()
-                .HasIndex(a => a.StravaActivityId)
+                .Property(e => e.ExternalApp)
+                .HasColumnType("VARCHAR(128)")
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (ExerciseTrackingApp)Enum.Parse(typeof(ExerciseTrackingApp), v));
+
+            modelBuilder.Entity<UserActivity>()
+                .Property(e => e.DistanceOriginalUnit)
+                .HasColumnType("VARCHAR(32)")
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (DistanceUnit)Enum.Parse(typeof(DistanceUnit), v));
+
+
+            modelBuilder.Entity<UserActivity>()
+                .HasIndex(a => new { a.ExternalApp, a.ExternalAppActivityId })
                 .IsUnique();
 
             modelBuilder.Entity<UserActivity>()

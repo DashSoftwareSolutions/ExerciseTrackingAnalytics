@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Extensions;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Security.Authorization
 {

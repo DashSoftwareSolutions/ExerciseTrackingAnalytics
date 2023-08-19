@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using ExerciseTrackingAnalytics.Models
+@using ExerciseTrackingAnalytics.Models.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -57,7 +58,7 @@
                 e.preventDefault();
                 console.log('Let\'s sync the activities!');
 
-                fetch('/api/strava-activity-sync', {
+                 fetch('/api/strava-activity-sync', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -70,7 +71,7 @@
                     .catch((error) => {
                         console.log('Error syncing the activities:', error);
                     });
-            });
+            }); 
         })();
     </script>
 }

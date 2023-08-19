@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ExerciseTrackingAnalytics.Extensions;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Models
 {
@@ -15,7 +16,10 @@ namespace ExerciseTrackingAnalytics.Models
         public ApplicationUser? User { get; private set; }
 
         [Required]
-        public long StravaActivityId { get; set; }
+        public ExerciseTrackingApp ExternalApp { get; set; }
+        
+        [Required]
+        public long ExternalAppActivityId { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         [MaxLength(256)]
@@ -45,7 +49,15 @@ namespace ExerciseTrackingAnalytics.Models
         public decimal DistanceInMeters { get; set; }
 
         [Required]
-        public decimal TotalElevationGainInMeters { get; set; }
+        public decimal DistanceInMiles { get; set; }
+
+        /// <summary>
+        /// Specifies which measure of the activity's distance was the original one (and which is a converted value)
+        /// </summary>
+        [Required]
+        public DistanceUnit DistanceOriginalUnit { get; set; }
+
+        public decimal? TotalElevationGainInMeters { get; set; }
 
         [Required]
         public int ElapsedTimeInSeconds { get; set; }

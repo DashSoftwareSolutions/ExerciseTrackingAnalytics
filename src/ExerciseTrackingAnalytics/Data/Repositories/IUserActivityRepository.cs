@@ -6,9 +6,9 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
     {
         Task<UserActivity?> GetByIdAsync(long id);
 
-        Task<UserActivity?> GetByStravaId(long stravaActivityId);
+        Task<UserActivity?> GetByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId);
 
-        Task<bool> ExistsByStravaIdAsync(long stravaActivityId);
+        Task<bool> ExistsByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId);
 
         Task<UserActivity?> InsertAsync(UserActivity userActivity);
     }

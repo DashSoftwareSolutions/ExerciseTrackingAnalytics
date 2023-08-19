@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Security.Authorization
 {

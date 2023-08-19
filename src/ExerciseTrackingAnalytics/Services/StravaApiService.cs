@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using ExerciseTrackingAnalytics.Exceptions;
 using ExerciseTrackingAnalytics.Extensions;
-using ExerciseTrackingAnalytics.Models;
 using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
+using ExerciseTrackingAnalytics.Models.Strava;
 
 namespace ExerciseTrackingAnalytics.Services
 {

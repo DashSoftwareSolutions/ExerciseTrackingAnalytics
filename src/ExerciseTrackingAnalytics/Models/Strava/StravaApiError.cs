@@ -1,4 +1,4 @@
-﻿namespace ExerciseTrackingAnalytics.Models
+﻿namespace ExerciseTrackingAnalytics.Models.Strava
 {
     /// <summary>
     /// Represents specific error details about a problem ancountered when calling the Strava API

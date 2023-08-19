@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace ExerciseTrackingAnalytics.Models
+namespace ExerciseTrackingAnalytics.Models.Identity
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
@@ -19,12 +19,12 @@ namespace ExerciseTrackingAnalytics.Models
 
         public DateTime? PhoneConfirmedDate { get; set; }
 
-        public virtual ICollection<IdentityUserClaim<Guid>>? Claims { get; set; }
+        public virtual ICollection<ApplicationUserClaim>? Claims { get; set; }
 
-        public virtual ICollection<IdentityUserLogin<Guid>>? Logins { get; set; }
+        public virtual ICollection<ApplicationUserLogin>? Logins { get; set; }
 
-        public virtual ICollection<IdentityUserToken<Guid>>? Tokens { get; set; }
+        public virtual ICollection<ApplicationUserToken>? Tokens { get; set; }
 
-        public virtual ICollection<IdentityUserRole<Guid>>? UserRoles { get; set; }
+        public virtual ICollection<ApplicationUserRole>? UserRoles { get; set; }
     }
 }

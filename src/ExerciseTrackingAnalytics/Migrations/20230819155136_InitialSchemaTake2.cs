@@ -4,9 +4,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ExerciseTrackingAnalytics.Data.Migrations
+namespace ExerciseTrackingAnalytics.Migrations
 {
-    public partial class InitialIdentitySchema : Migration
+    public partial class InitialSchemaTake2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -160,6 +160,39 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserActivities",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExternalApp = table.Column<string>(type: "VARCHAR(128)", nullable: false),
+                    ExternalAppActivityId = table.Column<long>(type: "bigint", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    SportType = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    StartDateUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false),
+                    TimeZone = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    DistanceInMeters = table.Column<decimal>(type: "numeric", nullable: false),
+                    DistanceInMiles = table.Column<decimal>(type: "numeric", nullable: false),
+                    DistanceOriginalUnit = table.Column<string>(type: "VARCHAR(32)", nullable: false),
+                    TotalElevationGainInMeters = table.Column<decimal>(type: "numeric", nullable: true),
+                    ElapsedTimeInSeconds = table.Column<int>(type: "integer", nullable: false),
+                    MovingTimeInSeconds = table.Column<int>(type: "integer", nullable: false),
+                    Calories = table.Column<decimal>(type: "numeric", nullable: false),
+                    RecordInsertDateUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false, defaultValueSql: "now() AT TIME ZONE 'UTC'")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserActivities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserActivities_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -196,6 +229,17 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserActivities_ExternalApp_ExternalAppActivityId",
+                table: "UserActivities",
+                columns: new[] { "ExternalApp", "ExternalAppActivityId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserActivities_UserId",
+                table: "UserActivities",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -214,6 +258,9 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "UserActivities");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

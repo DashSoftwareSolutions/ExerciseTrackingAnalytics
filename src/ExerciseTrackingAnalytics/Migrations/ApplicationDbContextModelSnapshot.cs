@@ -3,28 +3,26 @@ using System;
 using ExerciseTrackingAnalytics.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ExerciseTrackingAnalytics.Data.Migrations
+namespace ExerciseTrackingAnalytics.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230625223119_InitialIdentitySchema")]
-    partial class InitialIdentitySchema
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.16")
+                .HasAnnotation("ProductVersion", "6.0.18")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.ApplicationRole", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,7 +52,31 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.ApplicationUser", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationRoleClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -135,31 +157,7 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -183,7 +181,7 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserLogin", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -206,7 +204,7 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserRole", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -221,7 +219,7 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserToken", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -242,55 +240,150 @@ namespace ExerciseTrackingAnalytics.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.UserActivity", b =>
                 {
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationRole", null)
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Calories")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("DistanceInMeters")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("DistanceInMiles")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("DistanceOriginalUnit")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(32)");
+
+                    b.Property<int>("ElapsedTimeInSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ExternalApp")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(128)");
+
+                    b.Property<long>("ExternalAppActivityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MovingTimeInSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("RecordInsertDateUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TIMESTAMP")
+                        .HasDefaultValueSql("now() AT TIME ZONE 'UTC'");
+
+                    b.Property<string>("SportType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("StartDateUtc")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal?>("TotalElevationGainInMeters")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ExternalApp", "ExternalAppActivityId")
+                        .IsUnique();
+
+                    b.ToTable("UserActivities");
+                });
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationRoleClaim", b =>
+                {
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserClaim", b =>
                 {
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationUser", null)
-                        .WithMany()
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", null)
+                        .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserLogin", b =>
                 {
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationUser", null)
-                        .WithMany()
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", null)
+                        .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserRole", b =>
                 {
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationRole", null)
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationUser", null)
-                        .WithMany()
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", null)
+                        .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUserToken", b =>
                 {
-                    b.HasOne("ExerciseTrackingAnalytics.Models.ApplicationUser", null)
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", null)
+                        .WithMany("Tokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.UserActivity", b =>
+                {
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("Claims");
+
+                    b.Navigation("Logins");
+
+                    b.Navigation("Tokens");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

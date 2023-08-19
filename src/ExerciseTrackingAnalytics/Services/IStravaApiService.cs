@@ -1,4 +1,4 @@
-﻿using ExerciseTrackingAnalytics.Models;
+﻿using ExerciseTrackingAnalytics.Models.Strava;
 
 namespace ExerciseTrackingAnalytics.Services
 {

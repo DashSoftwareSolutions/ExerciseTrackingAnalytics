@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace ExerciseTrackingAnalytics.Models
+namespace ExerciseTrackingAnalytics.Models.Strava
 {
     /// <summary>
     /// Represents an Activity in Strava

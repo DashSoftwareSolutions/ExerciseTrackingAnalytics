@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace ExerciseTrackingAnalytics.Models
+namespace ExerciseTrackingAnalytics.Models.Identity
 {
     public class ApplicationRole : IdentityRole<Guid>
     {

@@ -107,6 +107,7 @@ namespace ExerciseTrackingAnalytics.Services
             else
             {
                 _logger.LogInformation("All recent activities have been synced to the database");
+                syncOperationResult.IsSuccessful = true;
             }
 
             return syncOperationResult;

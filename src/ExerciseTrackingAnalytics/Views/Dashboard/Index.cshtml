@@ -1,0 +1,87 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ExerciseTrackingAnalytics.Models
+@using ExerciseTrackingAnalytics.Models.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row mb-4">
+    <div class="col text-center">
+        <h1 class="display-4">Welcome to Exercise Tracking Analytics</h1>
+    </div>
+</div>
+
+@* Sync Activities Modal *@
+<div class="modal fade" id="dashboard_page--activities_sync_modal" tabindex="-1" aria-labelledby="dashboard_page--activities_sync_modal_title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dashboard_page--activities_sync_modal_title">Check for Recent Activities?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="dashboard_page--activities_sync_modal_body">
+                Check for recent Strava Activities and sync them to the database?
+            </div>
+            <div class="modal-footer">
+                <div id="dashboard_page--activities_sync_modal_yes_no_buttons">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="dashboard_page--activities_sync_modal_no_button">No</button>
+                    <button type="button" class="btn btn-primary" id="dashboard_page--activities_sync_modal_yes_button">Yes</button>
+                </div>
+                <div id="dashboard_page--activities_sync_ok_button_container" style="display: none">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="dashboard_page--activities_sync_modal_ok_button">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            const modalBody = document.getElementById('dashboard_page--activities_sync_modal_body');
+            const yesNoButtonsContainer = document.getElementById('dashboard_page--activities_sync_modal_yes_no_buttons');
+            const okButtonContainer = document.getElementById('dashboard_page--activities_sync_ok_button_container');
+
+            // Bind Event Handler for Yes Button
+            $('#dashboard_page--activities_sync_modal_yes_button').on('click', (e) => {
+                e.preventDefault();
+                console.log('Exercise Tracking Analytics: Syncing recent Strava activities...');
+                modalBody.innerText = 'Checking for recent activities...';
+
+                fetch('/api/strava-activity-sync', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(async (response) => {
+                        console.log(`Exercise Tracking Analytics: Recent Activities Sync API Call Response Status: ${response.status} ${response.statusText}`);
+                        const jsonResult = await response.json();
+                        console.log('Exercise Tracking Analytics: Recent Activities Sync API Call Response JSON Data:', jsonResult);
+
+                        if (response.ok) {
+                            modalBody.innerText = (jsonResult && jsonResult.message) ?
+                                jsonResult.message :
+                                'Recent activity check complete.';
+                        } else {
+                            modalBody.innerText = (jsonResult && jsonResult.message) ?
+                                jsonResult.message :
+                                'We were unable to sync recent Strava Activities due to an unexpected system error.';
+                        }
+
+                        yesNoButtonsContainer.style.display = 'none';
+                        okButtonContainer.style.display = 'block';
+
+                    })
+            });
+
+            // Open the Activities Sync Modal
+            const activitySyncModal = new bootstrap.Modal(document.getElementById('dashboard_page--activities_sync_modal'));
+            activitySyncModal.show();
+        })();
+    </script>
+}

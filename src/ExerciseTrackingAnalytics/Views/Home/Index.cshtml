@@ -1,14 +1,5 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using ExerciseTrackingAnalytics.Models
-@using ExerciseTrackingAnalytics.Models.Identity
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
-
-@{
+﻿@{
     ViewData["Title"] = "Home Page";
-    var accessToken = ViewBag.AccessToken as string;
-    var accessTokenExpiration = ViewBag.AccessTokenExpiration as string;
-    var refreshToken = ViewBag.RefreshToken as string;
 }
 
 <div class="row mb-4">
@@ -19,31 +10,7 @@
 
 <div class="row">
     <div class="col">
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <div>You are logged in using Strava.  Yay!</div>
-
-            @if (accessToken != null)
-            {
-                <div>Access Token: @accessToken</div>
-            }
-
-            @if (accessTokenExpiration != null)
-            {
-                <div>Access Token Expires: @accessTokenExpiration</div>
-            }
-
-            @if (refreshToken != null)
-            {
-                <div>Refresh Token: @refreshToken</div>
-            }
-
-            <button id="sync_button">Sync Activities</button>
-        }
-        else
-        {
-            <div><a href="~/Identity/Account/Login">Log in</a> to access your Strava data and see the reporting, analytics and insights.</div>
-        }
+        <div><a href="~/identity/account/login">Log in</a> to access your Strava data and see the reporting, analytics and insights.</div>
     </div>
 
     <div class="col">
@@ -51,27 +18,4 @@
     </div>
 </div>
 
-@section Scripts {
-    <script type="text/javascript">
-        (function () {
-            $('#sync_button').on('click', (e) => {
-                e.preventDefault();
-                console.log('Let\'s sync the activities!');
 
-                 fetch('/api/strava-activity-sync', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(() => {
-                        console.log('Done!');
-                    })
-                    .catch((error) => {
-                        console.log('Error syncing the activities:', error);
-                    });
-            }); 
-        })();
-    </script>
-}

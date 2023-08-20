@@ -22,14 +22,21 @@ namespace ExerciseTrackingAnalytics.Controllers
         {
             var result = await _syncService.SyncRecentActivitiesAsync();
 
-            return result.IsSuccessful
-                ? Json(new { Message = $"{result.NumSyncedActivities} recent Strava Activities successfully synced" })
-                : Problem(
-                    "We were unable to sync recent Strava Activities due to an unexpected system error.",
-                    instance: HttpContext.Request.GetDisplayUrl(),
-                    statusCode: StatusCodes.Status500InternalServerError,
-                    title: "Error Syncing Recent Strava Activities",
-                    type: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500");
+            if (result.IsSuccessful)
+            {
+                var message = result.NumSyncedActivities == 0
+                    ? "All recent Strava Activities have been synced to the database"
+                    : $"{result.NumSyncedActivities} recent Strava Activities successfully synced";
+
+                return Json(new { Message = message });
+            }
+
+            return Problem(
+                "We were unable to sync recent Strava Activities due to an unexpected system error.",
+                instance: HttpContext.Request.GetDisplayUrl(),
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: "Error Syncing Recent Strava Activities",
+                type: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500");
         }
     }
 }

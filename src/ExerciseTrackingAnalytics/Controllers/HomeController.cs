@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using ExerciseTrackingAnalytics.Models;
-using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 namespace ExerciseTrackingAnalytics.Controllers
 {
@@ -19,22 +17,7 @@ namespace ExerciseTrackingAnalytics.Controllers
         {
             if (User?.Identity?.IsAuthenticated ?? false)
             {
-                var accessToken = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token")?.Value;
-                var refreshToken = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_refresh_token")?.Value;
-                var accessTokenExpirationString = User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token_expires_at")?.Value;
-
-                ViewBag.AccessToken = accessToken;
-                ViewBag.RefreshToken = refreshToken;
-
-                if (accessTokenExpirationString != null &&
-                    DateTime.TryParse(
-                        accessTokenExpirationString,
-                        CultureInfo.CurrentCulture,
-                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-                        out var accessTokenExpiration))
-                {
-                    ViewBag.AccessTokenExpiration = accessTokenExpiration.ToString("o");
-                }
+                return Redirect("/dashboard");
             }
 
             return View();

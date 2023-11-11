@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -7,11 +8,15 @@ using Npgsql;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Models.Identity;
+using static ExerciseTrackingAnalytics.Constants;
 
 namespace ExerciseTrackingAnalytics.Security.Authentication
 {
     public class ApplicationUserManager : UserManager<ApplicationUser>
     {
+        private static readonly string[] _ProtectedTokenNames = new[] { "access_token", "refresh_token" };
+
+        private readonly IDataProtector _dataProtector;
         private readonly ApplicationDbContext _dbContext;
 
         public ApplicationUserManager(
@@ -28,6 +33,9 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
         {
             _dbContext = dbContext;
+
+            var dataProtectionProvider = services.GetRequiredService<IDataProtectionProvider>();
+            _dataProtector = dataProtectionProvider.CreateProtector(DataProtectionPurpose);
         }
 
         public string? GetUserFirstName(ClaimsPrincipal user)
@@ -122,7 +130,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
 
             using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
             {
-                return await connection.QueryFirstOrDefaultAsync<string>(@"
+                var userToken = await connection.QueryFirstOrDefaultAsync<ApplicationUserToken>(@"
           SELECT ""UserId""
                 ,""LoginProvider""
                 ,""Name""
@@ -133,6 +141,15 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
              AND ""Name"" = @tokenName;
         ",
                     new { userId = user.Id, loginProvider, tokenName });
+
+                if (userToken?.Value == null)
+                {
+                    return string.Empty;
+                }
+
+                return _ProtectedTokenNames.Contains(userToken.Name)
+                    ? UnprotectPersonalData(userToken.Value)
+                    : userToken.Value;
             }
         }
 
@@ -155,24 +172,30 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
                 throw new ArgumentNullException(nameof(tokenName));
             }
 
+            var isProtectedToken = _ProtectedTokenNames.Contains(tokenName);
+
             Logger.LogInformation(
                 "Setting authentication token for User ID {userId} and Login Provider {loginProvider}: {tokenName} = {tokenValue}",
                 user.Id,
                 loginProvider,
                 tokenName,
-                tokenValue);
+                isProtectedToken ? tokenValue.MaskSecretValue() : tokenValue);
 
             try
             {
                 using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
                 {
+                    var tokenValueToPersist = isProtectedToken
+                        ? ProtectPersonalData(tokenValue)
+                        : tokenValue;
+
                     var rowsAffected = await connection.ExecuteAsync(@"
         INSERT INTO ""AspNetUserTokens"" ( ""UserId"", ""LoginProvider"", ""Name"", ""Value"" )
         VALUES ( @userId, @loginProvider, @tokenName, @tokenValue )
         ON CONFLICT ( ""UserId"", ""LoginProvider"", ""Name"" )
         DO UPDATE SET ""Value"" = @tokenValue;
         ",
-                        new { userId = user.Id, loginProvider, tokenName, tokenValue });
+                        new { userId = user.Id, loginProvider, tokenName, tokenValue = tokenValueToPersist });
 
                     return rowsAffected == 1
                         ? IdentityResult.Success
@@ -196,7 +219,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
         {
             using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
             {
-                return await connection.QueryAsync<ApplicationUserToken>(@"
+                var userTokens = await connection.QueryAsync<ApplicationUserToken>(@"
           SELECT ""UserId""
                 ,""LoginProvider""
                 ,""Name""
@@ -207,6 +230,15 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
         ORDER BY ""Name"";
         ",
                     new { userId, loginProvider });
+
+                if (userTokens.HasAny())
+                {
+                    // Unprotect (decrypt) the token values if necessary
+                    userTokens = userTokens.ToArray(); // materialize the collection so the objects can be mutated
+                    UnprotectUserTokens(userTokens);
+                }
+
+                return userTokens;
             }
         }
 
@@ -262,6 +294,55 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
                     loginProvider);
 
                 return IdentityResult.Failed();
+            }
+        }
+
+        private string ProtectPersonalData(string data)
+        {
+            if (Options.Stores.ProtectPersonalData)
+            {
+                return _dataProtector.Protect(data);
+            }
+
+            return data;
+        }
+
+        private void ProtectUserTokens(IEnumerable<ApplicationUserToken> userTokens)
+        {
+            if (Options.Stores.ProtectPersonalData)
+            {
+                foreach (var userToken in userTokens)
+                {
+                    if (_ProtectedTokenNames.Contains(userToken.Name))
+                    {
+                        userToken.Value = _dataProtector.Protect(userToken.Value);
+                    }
+                }
+            }
+        }
+
+        private string UnprotectPersonalData(string protectedData)
+        {
+            if (Options.Stores.ProtectPersonalData)
+            {
+                return _dataProtector.Unprotect(protectedData);
+            }
+
+            return protectedData;
+        }
+
+        private void UnprotectUserTokens(IEnumerable<ApplicationUserToken> userTokens)
+        {
+            if (Options.Stores.ProtectPersonalData)
+            {
+                foreach (var userToken in userTokens)
+                {
+                    
+                    if (_ProtectedTokenNames.Contains(userToken.Name))
+                    {
+                        userToken.Value = _dataProtector.Unprotect(userToken.Value);
+                    }
+                }
             }
         }
     }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExerciseTrackingAnalytics", "ExerciseTrackingAnalytics.csproj", "{30EFA1E8-83D9-4317-BCEF-25F1EDCE31A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExerciseTrackingAnalytics.Tests", "..\..\test\ExerciseTrackingAnalytics.Tests\ExerciseTrackingAnalytics.Tests.csproj", "{1A4DE3B4-C806-469C-9C9C-944DD2B6F21E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{30EFA1E8-83D9-4317-BCEF-25F1EDCE31A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30EFA1E8-83D9-4317-BCEF-25F1EDCE31A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30EFA1E8-83D9-4317-BCEF-25F1EDCE31A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A4DE3B4-C806-469C-9C9C-944DD2B6F21E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A4DE3B4-C806-469C-9C9C-944DD2B6F21E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A4DE3B4-C806-469C-9C9C-944DD2B6F21E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A4DE3B4-C806-469C-9C9C-944DD2B6F21E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

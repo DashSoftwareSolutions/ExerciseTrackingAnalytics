@@ -5,12 +5,13 @@ using Serilog;
 using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
+using ExerciseTrackingAnalytics.Models.Identity;
 using ExerciseTrackingAnalytics.Security.Authentication;
 using ExerciseTrackingAnalytics.Security.Authentication.Strava;
 using ExerciseTrackingAnalytics.Security.Authorization;
+using ExerciseTrackingAnalytics.Security.DataProtection;
 using ExerciseTrackingAnalytics.Services;
 using StravaOAuth = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
-using ExerciseTrackingAnalytics.Models.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,13 +44,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// Data Protection (to encrypt user tokens)
+builder.Services.AddDataProtection();
+builder.Services.AddSingleton<KeyRing>();
+builder.Services.AddSingleton<LookupProtector>();
+builder.Services.Configure<DataProtectionKeyRingOptions>(options =>
+{
+    options.MasterKey = builder.Configuration["ApplicationDataProtectionMasterKey"];
+});
+
 // Identity
 builder.Services
-    .AddDefaultIdentity<ApplicationUser>(options => { })
+    .AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.Stores.ProtectPersonalData = true;
+    })
     .AddRoles<ApplicationRole>()
     .AddRoleManager<ApplicationRoleManager>()
     .AddUserManager<ApplicationUserManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddPersonalDataProtection<LookupProtector, KeyRing>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationClaimsPrincipalFactory>();

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using ExerciseTrackingAnalytics.Models.Identity;
+using ExerciseTrackingAnalytics.Extensions;
 
 namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
 {
@@ -197,6 +198,20 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
                 {
                     result = await _userManager.AddLoginAsync(user, info);
                     result = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
+                    if (info.AuthenticationTokens.HasAny())
+                    {
+                        user.Tokens = info
+                            .AuthenticationTokens
+                            .Select(authnToken => new ApplicationUserToken()
+                            {
+                                UserId = user.Id,
+                                LoginProvider = info.LoginProvider,
+                                Name = authnToken.Name,
+                                Value = authnToken.Value,
+                            })
+                            .ToArray();
+                    }
 
                     if (result.Succeeded)
                     {

@@ -1,4 +1,4 @@
-﻿namespace ExerciseTrackingAnalytics.Services
+﻿namespace ExerciseTrackingAnalytics.Services.Strava.ActivitySync
 {
     /// <summary>
     /// Service to sync recent Activities from Strava to the application database for the context user

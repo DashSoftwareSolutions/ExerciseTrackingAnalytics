@@ -1,6 +1,6 @@
 ﻿using ExerciseTrackingAnalytics.Models.Strava;
 
-namespace ExerciseTrackingAnalytics.Services
+namespace ExerciseTrackingAnalytics.Services.Strava.API
 {
     public interface IStravaApiService
     {

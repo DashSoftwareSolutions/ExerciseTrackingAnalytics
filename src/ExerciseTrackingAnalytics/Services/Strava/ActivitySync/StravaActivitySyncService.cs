@@ -2,9 +2,10 @@
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
 using ExerciseTrackingAnalytics.Models.Strava;
+using ExerciseTrackingAnalytics.Services.Strava.API;
 using static ExerciseTrackingAnalytics.Constants;
 
-namespace ExerciseTrackingAnalytics.Services
+namespace ExerciseTrackingAnalytics.Services.Strava.ActivitySync
 {
     public class StravaActivitySyncService : IStravaActivitySyncService
     {
@@ -29,7 +30,7 @@ namespace ExerciseTrackingAnalytics.Services
         {
             _logger.LogInformation("Fetching recent Strava Activities ...");
 
-            var syncOperationResult = new StravaSyncStatus() {  IsSuccessful = false, NumSyncedActivities = 0 };
+            var syncOperationResult = new StravaSyncStatus() { IsSuccessful = false, NumSyncedActivities = 0 };
             StravaActivity[] recentStravaActivities;
 
             try

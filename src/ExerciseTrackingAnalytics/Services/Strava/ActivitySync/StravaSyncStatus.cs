@@ -1,4 +1,4 @@
-﻿namespace ExerciseTrackingAnalytics.Services
+﻿namespace ExerciseTrackingAnalytics.Services.Strava.ActivitySync
 {
     public class StravaSyncStatus
     {

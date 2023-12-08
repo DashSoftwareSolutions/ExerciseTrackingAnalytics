@@ -4,7 +4,7 @@ using ExerciseTrackingAnalytics.Extensions;
 using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 using ExerciseTrackingAnalytics.Models.Strava;
 
-namespace ExerciseTrackingAnalytics.Services
+namespace ExerciseTrackingAnalytics.Services.Strava.API
 {
     public class StravaApiService : IStravaApiService
     {

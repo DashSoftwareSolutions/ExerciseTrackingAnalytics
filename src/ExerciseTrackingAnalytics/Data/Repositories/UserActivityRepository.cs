@@ -16,19 +16,19 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
             _logger = logger;
         }
 
-        public Task<ActivityAggregateStatistics> GetActivityAggregateStatisticsAsync(
+        public async Task<ActivityAggregateStatistics> GetActivityAggregateStatisticsAsync(
             Guid userId,
             DateTime? dateRangeStartUtc,
             DateTime? dateRangeEndUtc)
         {
             using (var connection = new NpgsqlConnection(_db.Database.GetConnectionString()))
             {
-                return connection.QuerySingleAsync<ActivityAggregateStatistics>(@"
+                return await connection.QuerySingleAsync<ActivityAggregateStatistics>(@"
   SELECT COUNT(*) AS ""NumActivities""
         ,COALESCE(SUM(""DistanceInMeters""), 0) AS ""TotalDistanceInMeters""
         ,COALESCE(SUM(""DistanceInMiles""), 0) AS ""TotalDistanceInMiles""
         ,COALESCE(SUM(""TotalElevationGainInMeters""), 0) AS ""TotalElevationGainInMeters""
-        ,COALESCE(SUM(""ElapsedTimeInSeconds""), 0) AS ""TotalElaspedTimeInSeconds""
+        ,COALESCE(SUM(""ElapsedTimeInSeconds""), 0) AS ""TotalElapsedTimeInSeconds""
         ,COALESCE(SUM(""MovingTimeInSeconds""), 0) AS ""TotalMovingTimeInSeconds""
         ,COALESCE(SUM(""Calories""), 0) AS ""TotalCalories""
     FROM ""UserActivities""
@@ -39,8 +39,11 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
                     new
                     {
                         userId,
-                        dateRangeStartUtc,
-                        dateRangeEndUtc,
+                        //dateRangeStartUtc,
+                        //dateRangeEndUtc,
+                        // Sigh.  For some reason, Npgsql keeps trying to outsmart me when it comes to time zones. So, have to change Kind = Utc to Kind = Unspecified to ensure my values are taken verbatim without being messed with.  Gross. :-(
+                        dateRangeStartUtc = dateRangeStartUtc.HasValue ? DateTime.SpecifyKind(dateRangeStartUtc.Value, DateTimeKind.Unspecified) : (DateTime?)null,
+                        dateRangeEndUtc = dateRangeEndUtc.HasValue ? DateTime.SpecifyKind(dateRangeEndUtc.Value, DateTimeKind.Unspecified) : (DateTime?)null,
                     });
             }
         }

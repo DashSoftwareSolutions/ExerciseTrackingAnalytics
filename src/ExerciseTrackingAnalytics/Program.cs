@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
+using ExerciseTrackingAnalytics.BusinessLogic;
 using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
@@ -12,6 +14,7 @@ using ExerciseTrackingAnalytics.Security.Authorization;
 using ExerciseTrackingAnalytics.Security.DataProtection;
 using ExerciseTrackingAnalytics.Services.Strava.API;
 using ExerciseTrackingAnalytics.Services.Strava.ActivitySync;
+using ExerciseTrackingAnalytics.Services.Time;
 using StravaOAuth = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,8 +93,19 @@ builder.Services.AddScoped<IStravaActivitySyncService, StravaActivitySyncService
 // Database Repositories
 builder.Services.AddScoped<IUserActivityRepository, UserActivityRepository>();
 
+// Time Provider
+builder.Services.AddSingleton<ITimeProvider, TimeProvider>();
+
+// Business Logic
+builder.Services.AddScoped<IActivityAggregateStatisticsBusinessLogic, ActivityAggregateStatisticsBusinessLogic>();
+
 // ASP.NET MVC Stuff
-builder.Services.AddControllersWithViews();
+builder.Services
+    .AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 var app = builder.Build();
 

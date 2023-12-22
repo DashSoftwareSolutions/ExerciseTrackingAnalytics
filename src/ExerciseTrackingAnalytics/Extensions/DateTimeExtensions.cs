@@ -98,5 +98,62 @@ namespace ExerciseTrackingAnalytics.Extensions
                 .WithZone(timeZone)
                 .ToDateTimeUnspecified();
         }
+
+        public static bool IsValidTimeZoneId(this string possibleTimeZoneId)
+        {
+            return DateTimeZoneProviders.Tzdb.Ids.Contains(possibleTimeZoneId);
+        }
+
+        /// <summary>
+        /// Convert UTC time to specified time zone
+        /// </summary>
+        /// <param name="utcDateTime">Date-time in UTC</param>
+        /// <param name="timeZone">IANA Time zone ID to convert to</param>
+        /// <param name="throwException">If true, the method throws exception if no time zone found</param>
+        /// <returns>Date time in specified timezone</returns>
+        public static DateTime ConvertToTimeZoneFromUtc(this DateTime utcDateTime, string timeZone, bool throwException = false)
+        {
+            var destTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone ?? string.Empty);
+
+            if (destTimeZone == null)
+            {
+                // Unsupported timezone
+                if (throwException)
+                    throw new ArgumentException($"'{timeZone ?? "NULL"}' is not a valid IANA Time Zone Database ID (e.g. America/Los_Angeles for U.S. Pacific Time)", nameof(timeZone));
+
+                // Just fallback on machine's time zone in this case
+                return utcDateTime.ToLocalTime();
+            }
+
+            return Instant.FromDateTimeUtc(utcDateTime.AsUtc())
+                          .InZone(destTimeZone)
+                          .ToDateTimeUnspecified();
+        }
+
+        /// <summary>
+        /// Convert time in specified time zone to UTC 
+        /// </summary>
+        /// <param name="dateTime">Date-time in specified time zone</param>
+        /// <param name="timeZone">Time zone to convert from</param>
+        /// <param name="throwException">If true, the method throws exception if no time zone found</param>
+        /// <returns>Date time in UTC</returns>
+        public static DateTime ConvertToUtcFromTimeZone(this DateTime dateTime, string timeZone, bool throwException = false)
+        {
+            var sourceTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone);
+
+            if (sourceTimeZone == null)
+            {
+                // Unsupported timezone
+                if (throwException)
+                    throw new ArgumentException($"'{timeZone ?? "NULL"}' is not a valid IANA Time Zone Database ID (e.g. America/Los_Angeles for U.S. Pacific Time)", nameof(timeZone));
+
+                // Return UTC from localtime in this case
+                return dateTime.ToUniversalTime();
+            }
+
+            LocalDateTime local = LocalDateTime.FromDateTime(dateTime);
+            ZonedDateTime zonedTime = local.InZoneLeniently(sourceTimeZone);
+            return zonedTime.ToDateTimeUtc();
+        }
     }
 }

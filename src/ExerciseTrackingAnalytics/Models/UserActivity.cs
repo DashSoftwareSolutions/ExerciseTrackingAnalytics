@@ -33,9 +33,9 @@ namespace ExerciseTrackingAnalytics.Models
         /// Activity Start Date UTC
         /// </summary>
         /// <remarks>
-        /// <strong>NOTE:</strong> We <em>CANNOT</em> do our normal thing to set <c>Kind</c> to <c>Utc</c> here.
-        /// EF / Npgsql are apparently insisting on type `TIMESTAMPTZ` if `Kind` is `Utc` and we're deliberately using
-        /// type `TIMESTAMP` (i.e. `TIMESTAMP WITHOUT TIME ZONE`).
+        /// <strong>NOTE:</strong> We <em>CANNOT</em> do our normal thing to set <c>Kind</c> to <c>Utc</c> here.<br />
+        /// EF / Npgsql are apparently insisting on type <c>TIMESTAMPTZ</c> if <c>Kind</c> is <c>Utc</c> and we're deliberately using
+        /// type <c>TIMESTAMP</c> (i.e. <c>TIMESTAMP WITHOUT TIME ZONE</c>).
         /// </remarks>
         [Required]
         [Column(TypeName = "TIMESTAMP")]

@@ -5,5 +5,6 @@
         Unspecified = 0,
         Meters = 1,
         Miles = 2,
+        Kilometers = 3,
     }
 }

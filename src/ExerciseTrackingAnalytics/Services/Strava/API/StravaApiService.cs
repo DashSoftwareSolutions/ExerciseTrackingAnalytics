@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using ExerciseTrackingAnalytics.Exceptions;
 using ExerciseTrackingAnalytics.Extensions;
-using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 using ExerciseTrackingAnalytics.Models.Strava;
+using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 namespace ExerciseTrackingAnalytics.Services.Strava.API
 {
@@ -54,6 +54,7 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
                 var requestUrl = $"{_apiBaseUrl}/athlete/activities{queryParams.ToUrlQueryString()}";
 
                 var response = await httpClient.GetAsync(requestUrl);
+                response.EnsureSuccessStatusCode();
                 var responseBodyContent = await response.Content.ReadAsStringAsync();
                 var results = JsonConvert.DeserializeObject<IEnumerable<StravaActivity>>(responseBodyContent);
 
@@ -63,7 +64,7 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
             {
                 _logger.LogError(ex, "HTTP Error encountered while querying Strava for Athlete Recent Activities");
                 var status = ex.StatusCode.HasValue ? $"{(int)ex.StatusCode} {ex.StatusCode}" : "<UNKNOWN>";
-                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for Athlete Recent Activities due to an API error.  API returned HTTP Response status {status}");
+                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for Athlete Recent Activities due to an API error.  API returned HTTP Response status {status}.");
             }
             catch (Exception ex)
             {
@@ -82,6 +83,7 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
             {
                 var requestUrl = $"{_apiBaseUrl}/activities/{activity.Id}";
                 var response = await httpClient.GetAsync(requestUrl);
+                response.EnsureSuccessStatusCode();
                 var responseBodyContent = await response.Content.ReadAsStringAsync();
                 var activityDetail = JsonConvert.DeserializeObject<StravaActivity>(responseBodyContent);
                 activity.Calories = activityDetail?.Calories ?? default;
@@ -90,7 +92,7 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
             {
                 _logger.LogError(ex, "HTTP Error encountered while querying Strava for details of Activity ID {stravaActivityId}", activity.Id);
                 var status = ex.StatusCode.HasValue ? $"{(int)ex.StatusCode} {ex.StatusCode}" : "<UNKNOWN>";
-                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for details of Activity ID {activity.Id} due to an API error.  API returned HTTP Response status {status}");
+                throw new ExerciseTrackingAnalyticsAppException($"Failed to query Strava for details of Activity ID {activity.Id} due to an API error.  API returned HTTP Response status {status}.");
             }
             catch (Exception ex)
             {

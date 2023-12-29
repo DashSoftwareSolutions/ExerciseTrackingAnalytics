@@ -14,8 +14,70 @@
     </div>
 </div>
 
+@* Loading Spinner while we're fetching the stats *@
+<div id="dashboard_page--loading_spinner" class="align-items-center justify-content-center" style="display: none !important; height: calc(100vh - 250px)">
+    <div class="spinner-border" role="status" style="width: 5rem; height: 5rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+@* Display the Current Month to Date and Year to Date stats *@
+<div id="dashboard_page--main_content_container" style="display: none">
+    <div class="card mb-5 mt-5" id="dashboard_page--month_to_date_stats">
+        <h5 class="card-header" data-bind="text: `${month} Month to Date`"></h5>
+        <div class="card-body d-flex flex-wrap justify-content-center text-center">
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Activities</div>
+                <div class="fs-4 fw-bold" data-bind="text: monthToDateStats.numActivities"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Distance</div>
+                <div class="fs-4 fw-bold" data-bind="text: monthToDateStats.totalDistance"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Moving Time</div>
+                <div class="fs-4 fw-bold" data-bind="text: monthToDateStats.totalMovingTime"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Average Speed</div>
+                <div class="fs-4 fw-bold" data-bind="text: monthToDateStats.averageSpeed"></div>
+            </div>
+            <div>
+                <div class="text-secondary small">Average Distance / Day</div>
+                <div class="fs-4 fw-bold" data-bind="text: monthToDateStats.averageDistancePerDay"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" id="dashboard_page--year_to_date_stats">
+        <h5 class="card-header" data-bind="text: `${year} Year to Date`"></h5>
+        <div class="card-body d-flex flex-wrap justify-content-center text-center">
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Activities</div>
+                <div class="fs-4 fw-bold" data-bind="text: yearToDateStats.numActivities"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Distance</div>
+                <div class="fs-4 fw-bold" data-bind="text: yearToDateStats.totalDistance"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Moving Time</div>
+                <div class="fs-4 fw-bold" data-bind="text: yearToDateStats.totalMovingTime"></div>
+            </div>
+            <div class="me-5 pe-5 border-end">
+                <div class="text-secondary small">Average Speed</div>
+                <div class="fs-4 fw-bold" data-bind="text: yearToDateStats.averageSpeed"></div>
+            </div>
+            <div>
+                <div class="text-secondary small">Average Distance / Day</div>
+                <div class="fs-4 fw-bold" data-bind="text: yearToDateStats.averageDistancePerDay"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @* Sync Activities Modal *@
-<div class="modal fade" id="dashboard_page--activities_sync_modal" tabindex="-1" aria-labelledby="dashboard_page--activities_sync_modal_title" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="dashboard_page--activities_sync_modal" tabindex="-1" aria-labelledby="dashboard_page--activities_sync_modal_title" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -41,15 +103,112 @@
 @section Scripts {
     <script type="text/javascript">
         (function () {
-            const modalBody = document.getElementById('dashboard_page--activities_sync_modal_body');
-            const yesNoButtonsContainer = document.getElementById('dashboard_page--activities_sync_modal_yes_no_buttons');
-            const okButtonContainer = document.getElementById('dashboard_page--activities_sync_ok_button_container');
+            const localNow = luxon.DateTime.local();
 
-            // Bind Event Handler for Yes Button
-            $('#dashboard_page--activities_sync_modal_yes_button').on('click', (e) => {
+            // Get references to various elements of interest
+            //     Activity Sync Modal
+            const activitySyncModalBody = document.getElementById('dashboard_page--activities_sync_modal_body');
+            const activitySyncModalYesNoButtonsContainer = document.getElementById('dashboard_page--activities_sync_modal_yes_no_buttons');
+            const activitySyncModalOkButtonContainer = document.getElementById('dashboard_page--activities_sync_ok_button_container');
+            const activitySyncModalYesButton = document.getElementById('dashboard_page--activities_sync_modal_yes_button');
+            const activitySyncModalNoButton = document.getElementById('dashboard_page--activities_sync_modal_no_button');
+            const activitySyncModalOkButton = document.getElementById('dashboard_page--activities_sync_modal_ok_button');
+            //     Dashboard Data Loading Spinner
+            const dashboardLoadingSpinner = document.getElementById('dashboard_page--loading_spinner');
+            //     Dashboard Main Content Container
+            const dashboardContentContainer = document.getElementById('dashboard_page--main_content_container');
+
+            // Define Knockout View Model for Dashboard Data
+            function DashboardStatsViewModel() {
+                this.month = `${localNow.monthLong} ${localNow.year}`;
+
+                this.monthToDateStats = {
+                    numActivities: 0,
+                    totalDistance: '',
+                    totalMovingTime: '',
+                    averageSpeed: '',
+                    averageDistancePerDay: '',
+                };
+
+                this.year = localNow.year;
+
+                this.yearToDateStats = {
+                    numActivities: 0,
+                    totalDistance: '',
+                    totalMovingTime: '',
+                    averageSpeed: '',
+                    averageDistancePerDay: '',
+                };
+            }
+
+            let dashboardViewModel = new DashboardStatsViewModel();
+
+            const locale = 'en-US'; // TODO: Make it user-selectable / settable by preferences, etc.
+            const measurementSystem = 'UnitedStates'; // choices are UnitedStates and MetricSystem.  TODO: Make it so user can choose?
+            const distanceUnit = 'mile'; // TODO: Make it data-driven and dependent on `measurementSystem`
+            const speedUnit = 'mile-per-hour';
+            const distanceFormatter = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2, style: 'unit', unit: distanceUnit });
+            const speedFormatter = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2, style: 'unit', unit: speedUnit });
+            const numberFormatter = new Intl.NumberFormat(locale);
+
+            // Fetch Dashboard Data
+            function fetchDashboardData() {
+                // show the loading spinner
+                dashboardLoadingSpinner.style.display = 'flex';
+
+                console.log('Exercise Tracking Analytics: Fetching Dashboard data...');
+
+                // make the API call
+                fetch(`/api/activity-statistics?tz=${localNow.zoneName}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(async (response) => {
+                        console.log(`Exercise Tracking Analytics: Dashboard Data Fetch API Call Response Status: ${response.status} ${response.statusText}`);
+                        const jsonResult = await response.json();
+                        console.log('Exercise Tracking Analytics: Dashboard Data Fetch API Call Response JSON Data:', jsonResult);
+
+                        // Update Knockout View Model with data from API response
+                        // This includes things like rounding values to the desired number of decimal places, etc.
+                        dashboardViewModel.monthToDateStats.numActivities = numberFormatter.format(jsonResult.monthToDate.numActivities);
+                        dashboardViewModel.monthToDateStats.totalDistance = distanceFormatter.format(jsonResult.monthToDate.totalDistance[measurementSystem].amount);
+                        dashboardViewModel.monthToDateStats.totalMovingTime = jsonResult.monthToDate.totalMovingTime;
+                        dashboardViewModel.monthToDateStats.averageSpeed = speedFormatter.format(jsonResult.monthToDate.averageSpeed[measurementSystem].amount);
+                        dashboardViewModel.monthToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.monthToDate.averageDistancePerDay[measurementSystem].amount);
+                        dashboardViewModel.yearToDateStats.numActivities = numberFormatter.format(jsonResult.yearToDate.numActivities);
+                        dashboardViewModel.yearToDateStats.totalDistance = distanceFormatter.format(jsonResult.yearToDate.totalDistance[measurementSystem].amount);
+                        dashboardViewModel.yearToDateStats.totalMovingTime = jsonResult.yearToDate.totalMovingTime;
+                        dashboardViewModel.yearToDateStats.averageSpeed = speedFormatter.format(jsonResult.yearToDate.averageSpeed[measurementSystem].amount);
+                        dashboardViewModel.yearToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.yearToDate.averageDistancePerDay[measurementSystem].amount);
+
+                        // Hide the Spinner
+                        dashboardLoadingSpinner.style.display = 'none';
+
+                        // Apply Knockout Bindings
+                        ko.applyBindings(dashboardViewModel);
+
+                        // Show 
+                        dashboardContentContainer.style.display = 'block';
+
+                        // For testing the spinner, add a timeout
+                        // setTimeout(() => {
+                        //     dashboardLoadingSpinner.style.display = 'none';
+                        //     ko.applyBindings(dashboardViewModel);
+                        //     dashboardContentContainer.style.display = 'block';
+                        // }, 2000);
+                    });
+            }
+
+            // Activity Sync Modal Yes Button Click Event Handler
+            activitySyncModalYesButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 console.log('Exercise Tracking Analytics: Syncing recent Strava activities...');
-                modalBody.innerText = 'Checking for recent activities...';
+                activitySyncModalBody.innerText = 'Checking for recent activities...';
+                activitySyncModalYesButton.disabled = true;
+                activitySyncModalNoButton.disabled = true;
 
                 fetch('/api/strava-activity-sync', {
                     method: 'POST',
@@ -64,19 +223,30 @@
                         console.log('Exercise Tracking Analytics: Recent Activities Sync API Call Response JSON Data:', jsonResult);
 
                         if (response.ok) {
-                            modalBody.innerText = (jsonResult && jsonResult.message) ?
+                            activitySyncModalBody.innerText = (jsonResult && jsonResult.message) ?
                                 jsonResult.message :
                                 'Recent activity check complete.';
                         } else {
-                            modalBody.innerText = (jsonResult && jsonResult.message) ?
+                            activitySyncModalBody.innerText = (jsonResult && jsonResult.message) ?
                                 jsonResult.message :
                                 'We were unable to sync recent Strava Activities due to an unexpected system error.';
                         }
 
-                        yesNoButtonsContainer.style.display = 'none';
-                        okButtonContainer.style.display = 'block';
+                        activitySyncModalYesNoButtonsContainer.style.display = 'none';
+                        activitySyncModalOkButtonContainer.style.display = 'block';
+                    });
+            });
 
-                    })
+            // Activity Sync Modal No Button Click Event Handler
+            activitySyncModalNoButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchDashboardData();
+            });
+
+            // Activity Sync Modal Ok Button Click Event Handler
+            activitySyncModalOkButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchDashboardData();
             });
 
             // Open the Activities Sync Modal

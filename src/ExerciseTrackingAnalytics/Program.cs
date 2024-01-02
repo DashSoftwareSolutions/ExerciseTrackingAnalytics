@@ -8,6 +8,7 @@ using ExerciseTrackingAnalytics.Data;
 using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models.Identity;
+using ExerciseTrackingAnalytics.Models.Strava;
 using ExerciseTrackingAnalytics.Security.Authentication;
 using ExerciseTrackingAnalytics.Security.Authentication.Strava;
 using ExerciseTrackingAnalytics.Security.Authorization;
@@ -89,6 +90,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IStravaApiService, StravaApiService>();
 builder.Services.AddScoped<IStravaActivitySyncService, StravaActivitySyncService>();
+
+// Strava Webhook
+builder.Services.Configure<StravaWebhookOptions>(options =>
+{
+    options.VerificationToken = builder.Configuration["StravaWebhookVerificationToken"];
+});
 
 // Database Repositories
 builder.Services.AddScoped<IUserActivityRepository, UserActivityRepository>();

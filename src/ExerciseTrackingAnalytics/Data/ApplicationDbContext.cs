@@ -18,6 +18,8 @@ namespace ExerciseTrackingAnalytics.Data
     {
         public DbSet<UserActivity>? UserActivities { get; set; }
 
+        public DbSet<MasterFood>? MasterFoods { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -80,6 +82,19 @@ namespace ExerciseTrackingAnalytics.Data
                 .HasColumnType("TIMESTAMP")
                 .HasDefaultValueSql(GET_UTC_TIMESTAMP)
                 .ValueGeneratedOnAdd();
+
+            // Master Food
+            modelBuilder.Entity<MasterFood>()
+                .Property(mf => mf.RecordInsertDateUtc)
+                .HasColumnType("TIMESTAMP")
+                .HasDefaultValueSql(GET_UTC_TIMESTAMP)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<MasterFood>()
+                .HasIndex(mf => new { mf.NameNormalized, mf.Version })
+                .IsUnique();
+
+            // TODO: Food Diary Entry
         }
 
         private const string GET_UTC_TIMESTAMP = "now() AT TIME ZONE 'UTC'";

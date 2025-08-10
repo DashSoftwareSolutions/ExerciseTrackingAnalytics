@@ -22,6 +22,14 @@ namespace ExerciseTrackingAnalytics.Migrations
                     BrandName = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: true),
                     ServingSize = table.Column<decimal>(type: "numeric", nullable: false),
                     ServingSizeUnit = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    RecordInsertDateUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false, defaultValueSql: "now() AT TIME ZONE 'UTC'"),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OwnerUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsShared = table.Column<bool>(type: "boolean", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeactivatedDateUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: true),
+                    DeactivatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PredecessorId = table.Column<long>(type: "bigint", nullable: true),
                     Calories = table.Column<decimal>(type: "numeric", nullable: false),
                     TotalFatGrams = table.Column<decimal>(type: "numeric", nullable: true),
                     SaturatedFatGrams = table.Column<decimal>(type: "numeric", nullable: true),
@@ -39,15 +47,7 @@ namespace ExerciseTrackingAnalytics.Migrations
                     VitaminC_MicroGrams = table.Column<decimal>(type: "numeric", nullable: true),
                     VitaminD_MicroGrams = table.Column<decimal>(type: "numeric", nullable: true),
                     CalciumMilligrams = table.Column<decimal>(type: "numeric", nullable: true),
-                    IronMilligrams = table.Column<decimal>(type: "numeric", nullable: true),
-                    RecordInsertDateUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false, defaultValueSql: "now() AT TIME ZONE 'UTC'"),
-                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OwnerUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsShared = table.Column<bool>(type: "boolean", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeactivatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    PredecessorId = table.Column<long>(type: "bigint", nullable: true)
+                    IronMilligrams = table.Column<decimal>(type: "numeric", nullable: true)
                 },
                 constraints: table =>
                 {

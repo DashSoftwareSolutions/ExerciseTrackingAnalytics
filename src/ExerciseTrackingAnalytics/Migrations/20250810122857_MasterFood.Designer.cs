@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExerciseTrackingAnalytics.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250810112305_MasterFood")]
+    [Migration("20250810122857_MasterFood")]
     partial class MasterFood
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -270,7 +270,7 @@ namespace ExerciseTrackingAnalytics.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("DeactivatedDateUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TIMESTAMP");
 
                     b.Property<decimal?>("DietaryFiberGrams")
                         .HasColumnType("numeric");

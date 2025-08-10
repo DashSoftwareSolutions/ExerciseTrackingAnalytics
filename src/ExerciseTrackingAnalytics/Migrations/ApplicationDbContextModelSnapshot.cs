@@ -268,7 +268,7 @@ namespace ExerciseTrackingAnalytics.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("DeactivatedDateUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TIMESTAMP");
 
                     b.Property<decimal?>("DietaryFiberGrams")
                         .HasColumnType("numeric");

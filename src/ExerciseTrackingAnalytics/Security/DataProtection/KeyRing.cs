@@ -5,14 +5,14 @@ namespace ExerciseTrackingAnalytics.Security.DataProtection
 {
     public class KeyRing : ILookupProtectorKeyRing
     {
-        private string _applicationDataProtectionKey;
+        private readonly string _applicationDataProtectionKey;
 
         public KeyRing(IOptions<DataProtectionKeyRingOptions> options)
         {
             _applicationDataProtectionKey = options.Value.MasterKey;
         }
 
-        public const string ApplicationDataProtectionKeyName = "ExcerciseTrackingAnalyticsDataProtectionKey";
+        public const string ApplicationDataProtectionKeyName = "Dash Exercise Tracking Analytics";
 
         public string this[string keyId] =>
             keyId == ApplicationDataProtectionKeyName

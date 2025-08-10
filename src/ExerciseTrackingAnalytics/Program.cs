@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -50,7 +51,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Data Protection (to encrypt user tokens)
-builder.Services.AddDataProtection();
+builder.Services
+    .AddDataProtection()
+    .SetApplicationName("Dash Exercise Tracking Analytics");
+
 builder.Services.AddSingleton<KeyRing>();
 builder.Services.AddSingleton<LookupProtector>();
 builder.Services.Configure<DataProtectionKeyRingOptions>(options =>

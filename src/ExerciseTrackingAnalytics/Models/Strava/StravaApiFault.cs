@@ -1,7 +1,7 @@
 ﻿namespace ExerciseTrackingAnalytics.Models.Strava
 {
     /// <summary>
-    /// Represents a problem ancountered when calling the Strava API
+    /// Represents a problem encountered when calling the Strava API
     /// </summary>
     public class StravaApiFault
     {

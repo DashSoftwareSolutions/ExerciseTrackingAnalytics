@@ -176,13 +176,13 @@
                         dashboardViewModel.monthToDateStats.numActivities = numberFormatter.format(jsonResult.monthToDate.numActivities);
                         dashboardViewModel.monthToDateStats.totalDistance = distanceFormatter.format(jsonResult.monthToDate.totalDistance[measurementSystem].amount);
                         dashboardViewModel.monthToDateStats.totalMovingTime = jsonResult.monthToDate.totalMovingTime;
-                        dashboardViewModel.monthToDateStats.averageSpeed = speedFormatter.format(jsonResult.monthToDate.averageSpeed[measurementSystem].amount);
-                        dashboardViewModel.monthToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.monthToDate.averageDistancePerDay[measurementSystem].amount);
+                        dashboardViewModel.monthToDateStats.averageSpeed = speedFormatter.format(jsonResult.monthToDate.averageSpeed[measurementSystem]?.amount ?? 0);
+                        dashboardViewModel.monthToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.monthToDate.averageDistancePerDay[measurementSystem]?.amount ?? 0);
                         dashboardViewModel.yearToDateStats.numActivities = numberFormatter.format(jsonResult.yearToDate.numActivities);
                         dashboardViewModel.yearToDateStats.totalDistance = distanceFormatter.format(jsonResult.yearToDate.totalDistance[measurementSystem].amount);
                         dashboardViewModel.yearToDateStats.totalMovingTime = jsonResult.yearToDate.totalMovingTime;
-                        dashboardViewModel.yearToDateStats.averageSpeed = speedFormatter.format(jsonResult.yearToDate.averageSpeed[measurementSystem].amount);
-                        dashboardViewModel.yearToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.yearToDate.averageDistancePerDay[measurementSystem].amount);
+                        dashboardViewModel.yearToDateStats.averageSpeed = speedFormatter.format(jsonResult.yearToDate.averageSpeed[measurementSystem]?.amount ?? 0);
+                        dashboardViewModel.yearToDateStats.averageDistancePerDay = distanceFormatter.format(jsonResult.yearToDate.averageDistancePerDay[measurementSystem]?.amount ?? 0);
 
                         // Hide the Spinner
                         dashboardLoadingSpinner.style.display = 'none';

@@ -1,7 +1,7 @@
 ﻿namespace ExerciseTrackingAnalytics.Models.Strava
 {
     /// <summary>
-    /// Represents specific error details about a problem ancountered when calling the Strava API
+    /// Represents specific error details about a problem encountered when calling the Strava API
     /// </summary>
     /// <remarks>
     /// <see href="https://developers.strava.com/docs/reference/#api-models-Error"/>

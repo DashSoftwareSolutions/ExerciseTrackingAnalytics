@@ -59,7 +59,7 @@ namespace ExerciseTrackingAnalytics.Extensions
         }
 
         /// <summary>
-        /// This method will not do a converstion for you, and d.Kind must be DateTimeKind.Utc or it will throw ArgumentException.
+        /// This method will not do a conversion for you, and d.Kind must be DateTimeKind.Utc or it will throw ArgumentException.
         /// </summary>
         public static long ToUnixTimestamp(this DateTime d, bool milliseconds = false)
         {
@@ -71,7 +71,7 @@ namespace ExerciseTrackingAnalytics.Extensions
         }
 
         /// <summary>
-        /// This method will not do a converstion for you, and d.Kind must be DateTimeKind.Utc or it will throw ArgumentException.
+        /// This method will not do a conversion for you, and d.Kind must be DateTimeKind.Utc or it will throw ArgumentException.
         /// </summary>
         public static long? ToUnixTimestamp(this DateTime? d, bool milliseconds = false)
         {
@@ -110,14 +110,14 @@ namespace ExerciseTrackingAnalytics.Extensions
         /// <param name="utcDateTime">Date-time in UTC</param>
         /// <param name="timeZone">IANA Time zone ID to convert to</param>
         /// <param name="throwException">If true, the method throws exception if no time zone found</param>
-        /// <returns>Date time in specified timezone</returns>
+        /// <returns>Date time in the specified time zone</returns>
         public static DateTime ConvertToTimeZoneFromUtc(this DateTime utcDateTime, string timeZone, bool throwException = false)
         {
             var destTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone ?? string.Empty);
 
             if (destTimeZone == null)
             {
-                // Unsupported timezone
+                // Unsupported time zone
                 if (throwException)
                     throw new ArgumentException($"'{timeZone ?? "NULL"}' is not a valid IANA Time Zone Database ID (e.g. America/Los_Angeles for U.S. Pacific Time)", nameof(timeZone));
 
@@ -143,11 +143,11 @@ namespace ExerciseTrackingAnalytics.Extensions
 
             if (sourceTimeZone == null)
             {
-                // Unsupported timezone
+                // Unsupported time zone
                 if (throwException)
                     throw new ArgumentException($"'{timeZone ?? "NULL"}' is not a valid IANA Time Zone Database ID (e.g. America/Los_Angeles for U.S. Pacific Time)", nameof(timeZone));
 
-                // Return UTC from localtime in this case
+                // Return UTC from local time in this case
                 return dateTime.ToUniversalTime();
             }
 

@@ -109,6 +109,9 @@ namespace ExerciseTrackingAnalytics.Data
                 .HasConversion(
                     v => v.ToString(),
                     v => (MealType)Enum.Parse(typeof(MealType), v));
+
+            modelBuilder.Entity<FoodDiaryEntry>()
+                .HasIndex(fde => new { fde.OwnerUserId, fde.Date });
         }
 
         private const string GET_UTC_TIMESTAMP = "now() AT TIME ZONE 'UTC'";

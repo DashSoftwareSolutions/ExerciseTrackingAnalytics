@@ -103,12 +103,15 @@ builder.Services.Configure<StravaWebhookOptions>(options =>
 
 // Database Repositories
 builder.Services.AddScoped<IUserActivityRepository, UserActivityRepository>();
+builder.Services.AddScoped<IMasterFoodRepository, MasterFoodRepository>();
+builder.Services.AddScoped<IFoodDiaryEntryRepository, FoodDiaryEntryRepository>();
 
 // Time Provider
 builder.Services.AddSingleton<ITimeProvider, TimeProvider>();
 
 // Business Logic
 builder.Services.AddScoped<IActivityAggregateStatisticsBusinessLogic, ActivityAggregateStatisticsBusinessLogic>();
+builder.Services.AddScoped<IFoodDiaryBusinessLogic, FoodDiaryBusinessLogic>();
 
 // ASP.NET MVC Stuff
 builder.Services

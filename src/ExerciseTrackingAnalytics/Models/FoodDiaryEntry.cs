@@ -98,7 +98,5 @@ namespace ExerciseTrackingAnalytics.Models
 
         [NotMapped]
         public override decimal? IronMilligrams { get => NumServings * Food?.IronMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
-
-        private static void ThrowDoNotSetCalculatedValueException() => throw new InvalidOperationException("This property is computed; you should not try to set it manually.");
     }
 }

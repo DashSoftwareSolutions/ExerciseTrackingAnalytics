@@ -1,11 +1,11 @@
-﻿using ExerciseTrackingAnalytics.Extensions;
-using ExerciseTrackingAnalytics.Models.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ExerciseTrackingAnalytics.Extensions;
+using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Models
 {
-    public class MasterFood
+    public class MasterFood : NutritionalContent
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -33,61 +33,6 @@ namespace ExerciseTrackingAnalytics.Models
         [MaxLength(256)]
         public string ServingSizeUnit { get; set; } = string.Empty;
 
-        [Required]
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal Calories { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? TotalFatGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? SaturatedFatGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? PolyUnsaturatedFatGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? MonoUnsaturatedFatGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? TransFatGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? CholesterolMilligrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? SodiumMilligrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? PotassiumMilligrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? TotalCarbohydratesGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? DietaryFiberGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? TotalSugarsGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? ProteinGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? VitaminA_MicroGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? VitaminC_MicroGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? VitaminD_MicroGrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? CalciumMilligrams { get; set; }
-
-        [Range(typeof(decimal), "0.00", "1000000.00", ErrorMessage = "{0} must be between {1} and {2}")]
-        public decimal? IronMilligrams { get; set; }
-
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column(TypeName = "TIMESTAMP")]
         public DateTime RecordInsertDateUtc { get => _RecordInsertDateUtc; private set => _RecordInsertDateUtc = value.AsUtc(); }
@@ -105,6 +50,7 @@ namespace ExerciseTrackingAnalytics.Models
         [Required]
         public bool IsActive { get; set; }
 
+        [Column(TypeName = "TIMESTAMP")]
         public DateTime? DeactivatedDateUtc { get => _DeactivatedDateUtc; private set => _DeactivatedDateUtc = value.AsUtc(); }
         private DateTime? _DeactivatedDateUtc;
 

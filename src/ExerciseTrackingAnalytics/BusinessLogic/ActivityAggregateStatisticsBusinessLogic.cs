@@ -62,7 +62,7 @@ namespace ExerciseTrackingAnalytics.BusinessLogic
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get Activity Aggregate Statistics");
-                return new(ErrorType.RuntimeException, "User's activity dashboard data could not be retreived due to a technical error");
+                return new(ErrorType.RuntimeException, "User's activity dashboard data could not be retrieved due to a technical error");
             }
         }
     }

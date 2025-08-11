@@ -112,6 +112,7 @@ builder.Services.AddSingleton<ITimeProvider, TimeProvider>();
 // Business Logic
 builder.Services.AddScoped<IActivityAggregateStatisticsBusinessLogic, ActivityAggregateStatisticsBusinessLogic>();
 builder.Services.AddScoped<IFoodDiaryBusinessLogic, FoodDiaryBusinessLogic>();
+builder.Services.AddScoped<IMasterFoodBusinessLogic, MasterFoodBusinessLogic>();
 
 // ASP.NET MVC Stuff
 builder.Services

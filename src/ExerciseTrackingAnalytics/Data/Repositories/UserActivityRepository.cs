@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Immutable;
+using Microsoft.EntityFrameworkCore;
 using Dapper;
 using Npgsql;
 using ExerciseTrackingAnalytics.Models;
@@ -65,6 +66,17 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
             return _db.UserActivities!.FirstOrDefaultAsync(a =>
                 a.ExternalApp == externalApp &&
                 a.ExternalAppActivityId == externalAppActivityId);
+        }
+
+        public async Task<IEnumerable<UserActivity>> GetByUserAndDateRange(Guid userId, DateTime dateRangeStartUtc, DateTime dateRangeEndUtc)
+        {
+            var results = await _db
+                .UserActivities!
+                .Where(ua => ua.UserId == userId && ua.StartDateUtc >= dateRangeStartUtc && ua.StartDateUtc >= dateRangeEndUtc)
+                .OrderBy(ua => ua.StartDateUtc)
+                .ToArrayAsync();
+
+            return results.ToImmutableArray().AsEnumerable();
         }
 
         public async Task<UserActivity?> InsertAsync(UserActivity userActivity)

@@ -1,4 +1,5 @@
-﻿using ExerciseTrackingAnalytics.Data.Repositories;
+﻿using NodaTime;
+using ExerciseTrackingAnalytics.Data.Repositories;
 using ExerciseTrackingAnalytics.Models;
 using static ExerciseTrackingAnalytics.Constants;
 
@@ -45,9 +46,22 @@ namespace ExerciseTrackingAnalytics.BusinessLogic
             {
                 var foodDiaryEntries = await _foodDiaryEntryRepository.GetByUserAndDateAsync(userId, date);
 
-                // TODO: Exercise -- need a method to get collection of UserActivity by user ID and date range
+                var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(userTimeZone);
 
-                var result = new FoodDiaryDailySummary(date, foodDiaryEntries, Enumerable.Empty<UserActivity>());
+                if (timeZone == null)
+                    return new(ErrorType.RequestNotValid, $"Time Zone ID '{userTimeZone}' does not seem to be a valid IANA / Olson / Tzdb Time Zone identifier (e.g. 'America/Los_Angeles' for the United States Pacific Time Zone).");
+
+                var localStartOfDay = date.ToDateTime(new TimeOnly(0, 0));
+                var localEndOfDay = localStartOfDay.AddDays(1).Subtract(TimeSpan.FromMilliseconds(1));
+                var exerciseQueryStartDateUtc = LocalDateTime.FromDateTime(localStartOfDay).InZoneLeniently(timeZone);
+                var exerciseQueryEndDateUtc = LocalDateTime.FromDateTime(localEndOfDay).InZoneLeniently(timeZone);
+
+                var exerciseEntries = await _userActivityRepository.GetByUserAndDateRange(
+                    userId,
+                    DateTime.SpecifyKind(exerciseQueryStartDateUtc.ToDateTimeUtc(), DateTimeKind.Unspecified),
+                    DateTime.SpecifyKind(exerciseQueryEndDateUtc.ToDateTimeUtc(), DateTimeKind.Unspecified));
+
+                var result = new FoodDiaryDailySummary(date, foodDiaryEntries, exerciseEntries);
                 return new(result);
             }
             catch (Exception ex)

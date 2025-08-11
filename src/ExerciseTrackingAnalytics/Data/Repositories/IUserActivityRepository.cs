@@ -13,6 +13,8 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
 
         Task<UserActivity?> GetByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId);
 
+        Task<IEnumerable<UserActivity>> GetByUserAndDateRange(Guid userId, DateTime dateRangeStartUtc, DateTime dateRangeEndUtc);
+
         Task<bool> ExistsByExternalAppIdAsync(ExerciseTrackingApp externalApp, long externalAppActivityId);
 
         Task<UserActivity?> InsertAsync(UserActivity userActivity);

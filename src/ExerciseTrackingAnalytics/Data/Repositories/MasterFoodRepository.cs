@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ExerciseTrackingAnalytics.Exceptions;
+﻿using ExerciseTrackingAnalytics.Exceptions;
+using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace ExerciseTrackingAnalytics.Data.Repositories
 {
@@ -31,6 +33,19 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
             return result
                 ?? throw new ExerciseTrackingAnalyticsAppException(
                     $"Persistence of Master food {masterFood.Name} version {masterFood.Version} failed.  Could not retrieve newly inserted record.");
+        }
+
+        public async Task<IEnumerable<MasterFood>> SearchAsync(Guid contextUserId, string? searchTerm, string? barcode)
+        {
+            var results = await _db
+                .MasterFoods!
+                .Where(f => (!f.OwnerUserId.HasValue || f.OwnerUserId == contextUserId)
+                    && (searchTerm == null || f.NameNormalized.Contains(searchTerm!.ToLowerInvariant()))
+                    && (barcode == null || f.BarcodeNormalized == barcode.ToLowerInvariant()))
+                .OrderBy(f => f.Name)
+                .ToArrayAsync();
+
+            return results.ToImmutableArray().AsEnumerable();
         }
     }
 }

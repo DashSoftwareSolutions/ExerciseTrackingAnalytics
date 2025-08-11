@@ -27,6 +27,7 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
         {
             var results = await _db
                 .FoodDiaryEntries!
+                .Include(fde => fde.Food)
                 .Where(fde => fde.OwnerUserId == userId && fde.Date == date)
                 .OrderBy(fde => fde.TimeOfDay)
                 .ToArrayAsync();
@@ -38,6 +39,7 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
         {
             var results = await _db
                 .FoodDiaryEntries!
+                .Include(fde => fde.Food)
                 .Where(fde => fde.OwnerUserId == userId && fde.Date >= startDate && fde.Date <= endDate)
                 .OrderBy(fde => fde.TimeOfDay)
                 .ToArrayAsync();

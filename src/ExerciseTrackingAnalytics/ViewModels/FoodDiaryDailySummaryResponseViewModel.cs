@@ -15,6 +15,8 @@ namespace ExerciseTrackingAnalytics.ViewModels
 
         public decimal NetCalories { get; private set; }
 
+        public IEnumerable<UserActivityLiteResponseViewModel> Exercise {  get; private set; } = Enumerable.Empty<UserActivityLiteResponseViewModel>();
+
         public static FoodDiaryDailySummaryResponseViewModel? FromModel(FoodDiaryDailySummary model)
         {
             if (model == null)
@@ -26,6 +28,7 @@ namespace ExerciseTrackingAnalytics.ViewModels
                 FoodCalories = model.FoodCalories,
                 ExerciseCalories = model.ExerciseCalories,
                 NetCalories = model.NetCalories,
+                Exercise = model.Exercise.Select(UserActivityLiteResponseViewModel.FromModel).Where(x => x != null).Cast<UserActivityLiteResponseViewModel>(),
             };
         }
     }

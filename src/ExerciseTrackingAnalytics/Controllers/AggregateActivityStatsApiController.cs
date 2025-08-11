@@ -31,7 +31,7 @@ namespace ExerciseTrackingAnalytics.Controllers
 
             if (string.IsNullOrWhiteSpace(tz))
             {
-                _logger.LogWarning("Request did not specify a Time Zone.  Using system default Time Zone '{systemDefaultTimeZoneId}'", DefaultTimeZoneId);
+                _logger.LogInformation("Request did not specify a Time Zone.  Using system default Time Zone '{systemDefaultTimeZoneId}'", DefaultTimeZoneId);
                 specifiedUserTimeZoneId = DefaultTimeZoneId;
             }
             else

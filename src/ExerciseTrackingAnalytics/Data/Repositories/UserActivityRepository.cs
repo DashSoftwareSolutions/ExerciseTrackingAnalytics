@@ -72,7 +72,7 @@ namespace ExerciseTrackingAnalytics.Data.Repositories
         {
             var results = await _db
                 .UserActivities!
-                .Where(ua => ua.UserId == userId && ua.StartDateUtc >= dateRangeStartUtc && ua.StartDateUtc >= dateRangeEndUtc)
+                .Where(ua => ua.UserId == userId && ua.StartDateUtc >= dateRangeStartUtc && ua.StartDateUtc <= dateRangeEndUtc)
                 .OrderBy(ua => ua.StartDateUtc)
                 .ToArrayAsync();
 

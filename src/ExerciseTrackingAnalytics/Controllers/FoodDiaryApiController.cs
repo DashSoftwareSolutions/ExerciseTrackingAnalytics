@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ExerciseTrackingAnalytics.BusinessLogic;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.ViewModels;
+using static ExerciseTrackingAnalytics.Constants;
 
 namespace ExerciseTrackingAnalytics.Controllers
 {
@@ -22,11 +23,24 @@ namespace ExerciseTrackingAnalytics.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDailySummary([FromQuery] DateTime date)
+        public async Task<IActionResult> GetDailySummary([FromQuery] DateTime date, [FromQuery] string? tz)
         {
             var contextUserId = HttpContext!.User.GetUserId();
             _logger.LogDebug("Requesting Food Diary for User ID {userId} for {date:yyyy-MM-dd}", contextUserId, date);
-            var bizLogicResponse = await _foodDiaryBusinessLogic.GetDailySummary(contextUserId, DateOnly.FromDateTime(date));
+
+            string specifiedUserTimeZoneId;
+
+            if (string.IsNullOrWhiteSpace(tz))
+            {
+                _logger.LogInformation("Request did not specify a Time Zone.  Using system default Time Zone '{systemDefaultTimeZoneId}'", DefaultTimeZoneId);
+                specifiedUserTimeZoneId = DefaultTimeZoneId;
+            }
+            else
+            {
+                specifiedUserTimeZoneId = tz;
+            }
+
+            var bizLogicResponse = await _foodDiaryBusinessLogic.GetDailySummary(contextUserId, DateOnly.FromDateTime(date), specifiedUserTimeZoneId);
 
             if (!bizLogicResponse.IsSuccessful)
             {

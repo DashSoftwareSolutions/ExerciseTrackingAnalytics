@@ -28,8 +28,25 @@ namespace ExerciseTrackingAnalytics.BusinessLogic
         {
             try
             {
-                // TODO: Deal with food -- either retrieve and validate reference to existing master food or create new master food
+                MasterFood? food;
 
+                if (foodDiaryEntry.FoodId > 0)
+                {
+                    food = await _masterFoodRepository.GetByIdAsync(foodDiaryEntry.FoodId);
+
+                    if (food == null)
+                        return new(ErrorType.RequestNotValid, $"Food ID {foodDiaryEntry.FoodId} was not found.");
+                }
+                else if (foodDiaryEntry.Food != null)
+                {
+                    food = await _masterFoodRepository.InsertAsync(foodDiaryEntry.Food);
+                }
+                else
+                {
+                    return new(ErrorType.RequestNotValid, $"Either 'food' or 'foodId' is required.");
+                }
+
+                foodDiaryEntry.FoodId = food.Id;
                 var savedEntry = await _foodDiaryEntryRepository.InsertAsync(foodDiaryEntry);
                 return new(savedEntry);
             }

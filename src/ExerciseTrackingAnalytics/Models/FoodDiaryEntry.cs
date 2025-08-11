@@ -6,7 +6,7 @@ using ExerciseTrackingAnalytics.Models.Identity;
 
 namespace ExerciseTrackingAnalytics.Models
 {
-    public class FoodDiaryEntry : NutritionalContent
+    public class FoodDiaryEntry : IAggregateNutritionalInformation
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -45,58 +45,134 @@ namespace ExerciseTrackingAnalytics.Models
         [NotMapped]
         public string? Portion => Food?.ServingSizeUnit.ToQuantity((double)(NumServings * Food.ServingSize), format: "N1");
 
+        #region IAggregateNutritionalInformation
         [NotMapped]
-        public override decimal Calories { get => NumServings * Food?.Calories ?? 0.00m; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal Calories => NumServings * Food?.Calories ?? 0.00m;
+
+        #region Fats
+        [NotMapped]
+        public decimal? TotalFatGrams => NumServings * Food?.TotalFatGrams;
 
         [NotMapped]
-        public override decimal? TotalFatGrams { get => NumServings * Food?.TotalFatGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? SaturatedFatGrams => NumServings * Food?.SaturatedFatGrams;
 
         [NotMapped]
-        public override decimal? SaturatedFatGrams { get => NumServings * Food?.SaturatedFatGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? PolyUnsaturatedFatGrams => NumServings * Food?.PolyUnsaturatedFatGrams;
 
         [NotMapped]
-        public override decimal? PolyUnsaturatedFatGrams { get => NumServings * Food?.PolyUnsaturatedFatGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? MonoUnsaturatedFatGrams => NumServings * Food?.MonoUnsaturatedFatGrams;
 
         [NotMapped]
-        public override decimal? MonoUnsaturatedFatGrams { get => NumServings * Food?.MonoUnsaturatedFatGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? TransFatGrams => NumServings * Food?.TransFatGrams;
+        #endregion Fats
 
         [NotMapped]
-        public override decimal? TransFatGrams { get => NumServings * Food?.TransFatGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? CholesterolMilligrams => NumServings * Food?.CholesterolMilligrams;
 
         [NotMapped]
-        public override decimal? CholesterolMilligrams { get => NumServings * Food?.CholesterolMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? SodiumMilligrams => NumServings * Food?.SodiumMilligrams;
+
+        #region Carbohydrates
+        [NotMapped]
+        public decimal? TotalCarbohydratesGrams => NumServings * Food?.TotalCarbohydratesGrams;
 
         [NotMapped]
-        public override decimal? SodiumMilligrams { get => NumServings * Food?.SodiumMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? DietaryFiberGrams => NumServings * Food?.DietaryFiberGrams;
 
         [NotMapped]
-        public override decimal? PotassiumMilligrams { get => NumServings * Food?.PotassiumMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? TotalSugarsGrams => NumServings * Food?.TotalSugarsGrams;
 
         [NotMapped]
-        public override decimal? TotalCarbohydratesGrams { get => NumServings * Food?.TotalCarbohydratesGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? AddedSugarsGrams => NumServings * Food?.AddedSugarsGrams;
+        #endregion Carbohydrates
 
         [NotMapped]
-        public override decimal? DietaryFiberGrams { get => NumServings * Food?.DietaryFiberGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? ProteinGrams => NumServings * Food?.ProteinGrams;
+
+        #region Vitamins
+        [NotMapped]
+        public decimal? VitaminA_Micrograms => NumServings * Food?.VitaminA_Micrograms;
 
         [NotMapped]
-        public override decimal? TotalSugarsGrams { get => NumServings * Food?.TotalSugarsGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminB6_Micrograms => NumServings * Food?.VitaminB6_Micrograms;
 
         [NotMapped]
-        public override decimal? ProteinGrams { get => NumServings * Food?.ProteinGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminB12_Micrograms => NumServings * Food?.VitaminB12_Micrograms;
 
         [NotMapped]
-        public override decimal? VitaminA_MicroGrams { get => NumServings * Food?.VitaminA_MicroGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminC_Micrograms => NumServings * Food?.VitaminC_Micrograms;
 
         [NotMapped]
-        public override decimal? VitaminC_MicroGrams { get => NumServings * Food?.VitaminC_MicroGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminD_Micrograms => NumServings * Food?.VitaminD_Micrograms;
 
         [NotMapped]
-        public override decimal? VitaminD_MicroGrams { get => NumServings * Food?.VitaminD_MicroGrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminE_Micrograms => NumServings * Food?.VitaminE_Micrograms;
 
         [NotMapped]
-        public override decimal? CalciumMilligrams { get => NumServings * Food?.CalciumMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminK_Micrograms => NumServings * Food?.VitaminK_Micrograms;
 
         [NotMapped]
-        public override decimal? IronMilligrams { get => NumServings * Food?.IronMilligrams; set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? BiotinMicrograms => NumServings * Food?.BiotinMicrograms;
+
+        [NotMapped]
+        public decimal? CholineMicrograms => NumServings * Food?.CholineMicrograms;
+
+        [NotMapped]
+        public decimal? FolateMicrograms => NumServings * Food?.FolateMicrograms;
+
+        [NotMapped]
+        public decimal? NiacinMicrograms => NumServings * Food?.NiacinMicrograms;
+
+        [NotMapped]
+        public decimal? PantothenicAcidMicrograms => NumServings * Food?.PantothenicAcidMicrograms;
+
+        [NotMapped]
+        public decimal? RiboflavinMicrograms => NumServings * Food?.RiboflavinMicrograms;
+
+        [NotMapped]
+        public decimal? ThiaminMicrograms => NumServings * Food?.ThiaminMicrograms;
+        #endregion Vitamins
+
+        #region Minerals
+        [NotMapped]
+        public decimal? CalciumMilligrams => NumServings * Food?.CalciumMilligrams;
+
+        [NotMapped]
+        public decimal? ChlorideMilligrams => NumServings * Food?.ChlorideMilligrams;
+
+        [NotMapped]
+        public decimal? ChromiumMicrograms => NumServings * Food?.ChromiumMicrograms;
+
+        [NotMapped]
+        public decimal? CopperMicrograms => NumServings * Food?.CopperMicrograms;
+
+        [NotMapped]
+        public decimal? IodineMicrograms => NumServings * Food?.IodineMicrograms;
+
+        [NotMapped]
+        public decimal? IronMilligrams => NumServings * Food?.IronMilligrams;
+
+        [NotMapped]
+        public decimal? MagnesiumMilligrams => NumServings * Food?.MagnesiumMilligrams;
+
+        [NotMapped]
+        public decimal? ManganeseMilligrams => NumServings * Food?.ManganeseMilligrams;
+
+        [NotMapped]
+        public decimal? MolybdenumMicrograms => NumServings * Food?.MolybdenumMicrograms;
+
+        [NotMapped]
+        public decimal? PhosphorusMilligrams => NumServings * Food?.PhosphorusMilligrams;
+
+        [NotMapped]
+        public decimal? PotassiumMilligrams => NumServings * Food?.PotassiumMilligrams;
+
+        [NotMapped]
+        public decimal? SeleniumMicrograms => NumServings * Food?.SeleniumMicrograms;
+
+        [NotMapped]
+        public decimal? ZincMilligrams => NumServings * Food?.ZincMilligrams;
+        #endregion Minerals
+        #endregion IAggregateNutritionalInformation
     }
 }

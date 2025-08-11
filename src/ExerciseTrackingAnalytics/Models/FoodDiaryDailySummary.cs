@@ -2,7 +2,7 @@
 
 namespace ExerciseTrackingAnalytics.Models
 {
-    public class FoodDiaryDailySummary : NutritionalContent
+    public class FoodDiaryDailySummary : IAggregateNutritionalInformation
     {
         private IEnumerable<FoodDiaryEntry> _allFoods;
 
@@ -31,40 +31,95 @@ namespace ExerciseTrackingAnalytics.Models
 
         public decimal NetCalories => FoodCalories - ExerciseCalories;
 
-        public override decimal Calories { get => NetCalories; set => ThrowDoNotSetCalculatedValueException(); }
+        #region IAggregateNutritionalInformation
+        public decimal Calories => NetCalories;
 
-        public override decimal? TotalFatGrams { get => _allFoods.Sum(f => f.TotalFatGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        #region Fats
+        public decimal? TotalFatGrams => _allFoods.Sum(f => f.TotalFatGrams);
 
-        public override decimal? SaturatedFatGrams { get => _allFoods.Sum(f => f.SaturatedFatGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? SaturatedFatGrams => _allFoods.Sum(f => f.SaturatedFatGrams);
 
-        public override decimal? PolyUnsaturatedFatGrams { get => _allFoods.Sum(f => f.PolyUnsaturatedFatGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? PolyUnsaturatedFatGrams => _allFoods.Sum(f => f.PolyUnsaturatedFatGrams);
 
-        public override decimal? MonoUnsaturatedFatGrams { get => _allFoods.Sum(f => f.MonoUnsaturatedFatGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? MonoUnsaturatedFatGrams => _allFoods.Sum(f => f.MonoUnsaturatedFatGrams);
 
-        public override decimal? TransFatGrams { get => _allFoods.Sum(f => f.TransFatGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? TransFatGrams => _allFoods.Sum(f => f.TransFatGrams);
+        #endregion Fats
 
-        public override decimal? CholesterolMilligrams { get => _allFoods.Sum(f => f.CholesterolMilligrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? CholesterolMilligrams => _allFoods.Sum(f => f.CholesterolMilligrams);
 
-        public override decimal? SodiumMilligrams { get => _allFoods.Sum(f => f.SodiumMilligrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? SodiumMilligrams => _allFoods.Sum(f => f.SodiumMilligrams);
 
-        public override decimal? PotassiumMilligrams { get => _allFoods.Sum(f => f.PotassiumMilligrams); set => ThrowDoNotSetCalculatedValueException(); }
+        #region Carbohydrates
+        public decimal? TotalCarbohydratesGrams => _allFoods.Sum(f => f.TotalCarbohydratesGrams);
 
-        public override decimal? TotalCarbohydratesGrams { get => _allFoods.Sum(f => f.TotalCarbohydratesGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? DietaryFiberGrams => _allFoods.Sum(f => f.DietaryFiberGrams);
 
-        public override decimal? DietaryFiberGrams { get => _allFoods.Sum(f => f.DietaryFiberGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? TotalSugarsGrams => _allFoods.Sum(f => f.TotalSugarsGrams);
 
-        public override decimal? TotalSugarsGrams { get => _allFoods.Sum(f => f.TotalSugarsGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? AddedSugarsGrams => _allFoods.Sum(f => f.AddedSugarsGrams);
+        #endregion Carbohydrates
 
-        public override decimal? ProteinGrams { get => _allFoods.Sum(f => f.ProteinGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? ProteinGrams => _allFoods.Sum(f => f.ProteinGrams);
 
-        public override decimal? VitaminA_MicroGrams { get => _allFoods.Sum(f => f.VitaminA_MicroGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        #region Vitamins
+        public decimal? VitaminA_Micrograms => _allFoods.Sum(f => f.VitaminA_Micrograms);
 
-        public override decimal? VitaminC_MicroGrams { get => _allFoods.Sum(f => f.VitaminC_MicroGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminB6_Micrograms => _allFoods.Sum(f => f.VitaminB6_Micrograms);
 
-        public override decimal? VitaminD_MicroGrams { get => _allFoods.Sum(f => f.VitaminD_MicroGrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminB12_Micrograms => _allFoods.Sum(f => f.VitaminB12_Micrograms);
 
-        public override decimal? CalciumMilligrams { get => _allFoods.Sum(f => f.CalciumMilligrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminC_Micrograms => _allFoods.Sum(f => f.VitaminC_Micrograms);
 
-        public override decimal? IronMilligrams { get => _allFoods.Sum(f => f.IronMilligrams); set => ThrowDoNotSetCalculatedValueException(); }
+        public decimal? VitaminD_Micrograms => _allFoods.Sum(f => f.VitaminD_Micrograms);
+
+        public decimal? VitaminE_Micrograms => _allFoods.Sum(f => f.VitaminE_Micrograms);
+
+        public decimal? VitaminK_Micrograms => _allFoods.Sum(f => f.VitaminK_Micrograms);
+
+        public decimal? BiotinMicrograms => _allFoods.Sum(f => f.BiotinMicrograms);
+
+        public decimal? CholineMicrograms => _allFoods.Sum(f => f.CholineMicrograms);
+
+        public decimal? FolateMicrograms => _allFoods.Sum(f => f.FolateMicrograms);
+
+        public decimal? NiacinMicrograms => _allFoods.Sum(f => f.NiacinMicrograms);
+
+        public decimal? PantothenicAcidMicrograms => _allFoods.Sum(f => f.PantothenicAcidMicrograms);
+
+        public decimal? RiboflavinMicrograms => _allFoods.Sum(f => f.RiboflavinMicrograms);
+
+        public decimal? ThiaminMicrograms => _allFoods.Sum(f => f.ThiaminMicrograms);
+
+        #endregion Vitamins
+
+        #region Minerals
+        public decimal? CalciumMilligrams => _allFoods.Sum(f => f.CalciumMilligrams);
+
+        public decimal? ChlorideMilligrams => _allFoods.Sum(f => f.ChlorideMilligrams);
+
+        public decimal? ChromiumMicrograms => _allFoods.Sum(f => f.ChromiumMicrograms);
+
+        public decimal? CopperMicrograms => _allFoods.Sum(f => f.CopperMicrograms);
+
+        public decimal? IodineMicrograms => _allFoods.Sum(f => f.IodineMicrograms);
+
+        public decimal? IronMilligrams => _allFoods.Sum(f => f.IronMilligrams);
+
+        public decimal? MagnesiumMilligrams => _allFoods.Sum(f => f.MagnesiumMilligrams);
+
+        public decimal? ManganeseMilligrams => _allFoods.Sum(f => f.ManganeseMilligrams);
+
+        public decimal? MolybdenumMicrograms => _allFoods.Sum(f => f.MolybdenumMicrograms);
+
+        public decimal? PhosphorusMilligrams => _allFoods.Sum(f => f.PhosphorusMilligrams);
+
+        public decimal? PotassiumMilligrams => _allFoods.Sum(f => f.PotassiumMilligrams);
+
+        public decimal? SeleniumMicrograms => _allFoods.Sum(f => f.SeleniumMicrograms);
+
+        public decimal? ZincMilligrams => _allFoods.Sum(f => f.ZincMilligrams);
+        #endregion Minerals
+        #endregion IAggregateNutritionalInformation
     }
 }

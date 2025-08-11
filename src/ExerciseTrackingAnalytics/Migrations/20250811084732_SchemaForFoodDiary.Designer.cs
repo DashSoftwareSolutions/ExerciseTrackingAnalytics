@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExerciseTrackingAnalytics.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250810122857_MasterFood")]
-    partial class MasterFood
+    [Migration("20250811084732_SchemaForFoodDiary")]
+    partial class SchemaForFoodDiary
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,50 @@ namespace ExerciseTrackingAnalytics.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.FoodDiaryEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<long>("FoodId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Meal")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(32)");
+
+                    b.Property<decimal>("NumServings")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RecordInsertDateUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TIMESTAMP")
+                        .HasDefaultValueSql("now() AT TIME ZONE 'UTC'");
+
+                    b.Property<DateTime?>("RecordUpdateDateUtc")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<TimeSpan>("TimeOfDay")
+                        .HasColumnType("interval");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoodId");
+
+                    b.HasIndex("OwnerUserId", "Date");
+
+                    b.ToTable("FoodDiaryEntries");
+                });
 
             modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationRole", b =>
                 {
@@ -250,6 +294,20 @@ namespace ExerciseTrackingAnalytics.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<decimal?>("AddedSugarsGrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Barcode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("BarcodeNormalized")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal?>("BiotinMicrograms")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("BrandName")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
@@ -260,7 +318,19 @@ namespace ExerciseTrackingAnalytics.Migrations
                     b.Property<decimal>("Calories")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal?>("ChlorideMilligrams")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal?>("CholesterolMilligrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("CholineMicrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ChromiumMicrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("CopperMicrograms")
                         .HasColumnType("numeric");
 
                     b.Property<Guid>("CreatedByUserId")
@@ -275,6 +345,12 @@ namespace ExerciseTrackingAnalytics.Migrations
                     b.Property<decimal?>("DietaryFiberGrams")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal?>("FolateMicrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("IodineMicrograms")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal?>("IronMilligrams")
                         .HasColumnType("numeric");
 
@@ -283,6 +359,15 @@ namespace ExerciseTrackingAnalytics.Migrations
 
                     b.Property<bool>("IsShared")
                         .HasColumnType("boolean");
+
+                    b.Property<decimal?>("MagnesiumMilligrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ManganeseMilligrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("MolybdenumMicrograms")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("MonoUnsaturatedFatGrams")
                         .HasColumnType("numeric");
@@ -294,10 +379,20 @@ namespace ExerciseTrackingAnalytics.Migrations
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<decimal?>("NiacinMicrograms")
+                        .HasColumnType("numeric");
 
                     b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal?>("PantothenicAcidMicrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("PhosphorusMilligrams")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("PolyUnsaturatedFatGrams")
                         .HasColumnType("numeric");
@@ -316,7 +411,13 @@ namespace ExerciseTrackingAnalytics.Migrations
                         .HasColumnType("TIMESTAMP")
                         .HasDefaultValueSql("now() AT TIME ZONE 'UTC'");
 
+                    b.Property<decimal?>("RiboflavinMicrograms")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal?>("SaturatedFatGrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("SeleniumMicrograms")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("ServingSize")
@@ -328,6 +429,9 @@ namespace ExerciseTrackingAnalytics.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.Property<decimal?>("SodiumMilligrams")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ThiaminMicrograms")
                         .HasColumnType("numeric");
 
                     b.Property<decimal?>("TotalCarbohydratesGrams")
@@ -345,16 +449,33 @@ namespace ExerciseTrackingAnalytics.Migrations
                     b.Property<int>("Version")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("VitaminA_MicroGrams")
+                    b.Property<decimal?>("VitaminA_Micrograms")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("VitaminC_MicroGrams")
+                    b.Property<decimal?>("VitaminB12_Micrograms")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("VitaminD_MicroGrams")
+                    b.Property<decimal?>("VitaminB6_Micrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("VitaminC_Micrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("VitaminD_Micrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("VitaminE_Micrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("VitaminK_Micrograms")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ZincMilligrams")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BarcodeNormalized");
 
                     b.HasIndex("CreatedByUserId");
 
@@ -365,7 +486,12 @@ namespace ExerciseTrackingAnalytics.Migrations
                     b.HasIndex("PredecessorId");
 
                     b.HasIndex("NameNormalized", "Version")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"OwnerUserId\" IS NULL");
+
+                    b.HasIndex("NameNormalized", "Version", "OwnerUserId")
+                        .IsUnique()
+                        .HasFilter("\"OwnerUserId\" IS NOT NULL");
 
                     b.ToTable("MasterFoods");
                 });
@@ -441,6 +567,25 @@ namespace ExerciseTrackingAnalytics.Migrations
                         .IsUnique();
 
                     b.ToTable("UserActivities");
+                });
+
+            modelBuilder.Entity("ExerciseTrackingAnalytics.Models.FoodDiaryEntry", b =>
+                {
+                    b.HasOne("ExerciseTrackingAnalytics.Models.MasterFood", "Food")
+                        .WithMany()
+                        .HasForeignKey("FoodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExerciseTrackingAnalytics.Models.Identity.ApplicationUser", "OwnerUser")
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Food");
+
+                    b.Navigation("OwnerUser");
                 });
 
             modelBuilder.Entity("ExerciseTrackingAnalytics.Models.Identity.ApplicationRoleClaim", b =>

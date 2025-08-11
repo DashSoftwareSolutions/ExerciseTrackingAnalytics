@@ -93,8 +93,17 @@ namespace ExerciseTrackingAnalytics.Data
                 .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<MasterFood>()
-                .HasIndex(mf => new { mf.NameNormalized, mf.Version })
+                .HasIndex(mf => new { mf.NameNormalized, mf.Version, mf.OwnerUserId })
+                .HasFilter($"\"{nameof(MasterFood.OwnerUserId)}\" IS NOT NULL")
                 .IsUnique();
+
+            modelBuilder.Entity<MasterFood>()
+                .HasIndex(mf => new { mf.NameNormalized, mf.Version })
+                .HasFilter($"\"{nameof(MasterFood.OwnerUserId)}\" IS NULL")
+                .IsUnique();
+
+            modelBuilder.Entity<MasterFood>()
+                .HasIndex(mf => mf.BarcodeNormalized);
 
             // Food Diary Entry
             modelBuilder.Entity<FoodDiaryEntry>()

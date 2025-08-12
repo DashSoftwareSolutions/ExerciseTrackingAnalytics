@@ -12,5 +12,7 @@
         /// System-wide default Time Zone
         /// </summary>
         public const string DefaultTimeZoneId = "America/Los_Angeles";
+
+        public static readonly DateTime UnixEpochUtc = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
     }
 }

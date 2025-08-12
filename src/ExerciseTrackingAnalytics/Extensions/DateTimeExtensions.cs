@@ -4,6 +4,8 @@ namespace ExerciseTrackingAnalytics.Extensions
 {
     public static class DateTimeExtensions
     {
+        private static readonly double _timeUnitPointOfReference = Math.Abs((DateTime.UtcNow - Constants.UnixEpochUtc).TotalMilliseconds);
+
         /// <summary>
         /// This method will produce a DateTime with .Kind set to DateTimeKind.Utc.  If the input DateTimeKind is Unspecified, then
         /// it will assume Utc and merely set .Kind.  If it is Local, then it will convert to the Utc timezone.  If Utc is already set
@@ -30,6 +32,11 @@ namespace ExerciseTrackingAnalytics.Extensions
         public static DateTime? AsUtc(this DateTime? d)
         {
             return d.HasValue ? d.Value.AsUtc() : d;
+        }
+
+        public static bool IsTimestampInMilliseconds(this long timestamp)
+        {
+            return 1.0 > Math.Abs(Math.Log10(timestamp) - Math.Log10(_timeUnitPointOfReference));
         }
 
         /// <summary>

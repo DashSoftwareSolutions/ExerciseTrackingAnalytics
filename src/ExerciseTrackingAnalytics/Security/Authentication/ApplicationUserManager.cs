@@ -38,21 +38,6 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             _dataProtector = dataProtectionProvider.CreateProtector(DataProtectionPurpose);
         }
 
-        public string? GetUserFirstName(ClaimsPrincipal user)
-        {
-            return user?.GetUserFirstName();
-        }
-
-        public string? GetUserFullName(ClaimsPrincipal user)
-        {
-            return user?.GetUserFullName();
-        }
-
-        public string? GetUserLastName(ClaimsPrincipal user)
-        {
-            return user?.GetUserLastName();
-        }
-
         public override async Task<IdentityResult> ConfirmEmailAsync(ApplicationUser user, string token)
         {
             var result = await base.ConfirmEmailAsync(user, token);
@@ -98,7 +83,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             // It seems to be a combination: like my customized ASP.NET Identity / EF setup doesn't seem to really know about User Tokens
             if (!user.Tokens.HasAny())
             {
-                var tokens = await GetTokens(user.Id, loginProvider);
+                var tokens = await GetTokensAsync(user.Id, loginProvider);
 
                 if (tokens.Any())
                 {
@@ -185,7 +170,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             {
                 using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
                 {
-                    var tokenValueToPersist = isProtectedToken
+                    var tokenValueToPersist = isProtectedToken && Options.Stores.ProtectPersonalData
                         ? ProtectPersonalData(tokenValue)
                         : tokenValue;
 
@@ -215,7 +200,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             }
         }
 
-        private async Task<IEnumerable<ApplicationUserToken>> GetTokens(Guid userId, string loginProvider)
+        public async Task<IEnumerable<ApplicationUserToken>> GetTokensAsync(Guid userId, string loginProvider)
         {
             using (var connection = new NpgsqlConnection(_dbContext.Database.GetConnectionString()))
             {
@@ -305,20 +290,6 @@ namespace ExerciseTrackingAnalytics.Security.Authentication
             }
 
             return data;
-        }
-
-        private void ProtectUserTokens(IEnumerable<ApplicationUserToken> userTokens)
-        {
-            if (Options.Stores.ProtectPersonalData)
-            {
-                foreach (var userToken in userTokens)
-                {
-                    if (_ProtectedTokenNames.Contains(userToken.Name))
-                    {
-                        userToken.Value = _dataProtector.Protect(userToken.Value);
-                    }
-                }
-            }
         }
 
         private string UnprotectPersonalData(string protectedData)

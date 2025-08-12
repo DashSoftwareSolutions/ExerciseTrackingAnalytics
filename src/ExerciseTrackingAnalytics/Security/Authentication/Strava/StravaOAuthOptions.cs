@@ -46,7 +46,8 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
             // TODO/FIXME: First attempt to get user's access token and such
             // May not represent best practice
             // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0
-            SaveTokens = true; // normally you want this set to false
+            //SaveTokens = true; // normally you want this set to false
+            SaveTokens = false; // stop storing tokens in the cookie -- we'll get them from the database!
 
             Events.OnCreatingTicket = (oAuthContext) =>
             {

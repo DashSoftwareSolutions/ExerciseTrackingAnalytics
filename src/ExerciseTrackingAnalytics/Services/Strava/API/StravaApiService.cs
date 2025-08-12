@@ -1,7 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using ExerciseTrackingAnalytics.Exceptions;
 using ExerciseTrackingAnalytics.Extensions;
 using ExerciseTrackingAnalytics.Models.Strava;
+using ExerciseTrackingAnalytics.Security.Authentication;
+using ExerciseTrackingAnalytics.Security.Authentication.Strava;
+using static ExerciseTrackingAnalytics.Services.Strava.API.Constants;
+using GlobalConstants = ExerciseTrackingAnalytics.Constants;
 using StravaAuthentication = ExerciseTrackingAnalytics.Security.Authentication.Strava.Constants;
 
 namespace ExerciseTrackingAnalytics.Services.Strava.API
@@ -11,17 +16,21 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ILogger<StravaApiService> _logger;
-
-        private const string _apiBaseUrl = "https://www.strava.com/api/v3";
+        private readonly StravaOAuthOptions _stravaOptions;
+        private readonly ApplicationUserManager _userManager;
 
         public StravaApiService(
             IHttpClientFactory httpClientFactory,
             IHttpContextAccessor contextAccessor,
-            ILogger<StravaApiService> logger)
+            ILogger<StravaApiService> logger,
+            IOptions<StravaOAuthOptions> stravaOptions,
+            ApplicationUserManager userManager)
         {
             _httpClientFactory = httpClientFactory;
             _contextAccessor = contextAccessor;
             _logger = logger;
+            _stravaOptions = stravaOptions.Value;
+            _userManager = userManager;
         }
 
         public async Task<IEnumerable<StravaActivity>> GetRecentActivitiesAsync(
@@ -30,7 +39,9 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
             int pageNumber = 1,
             int pageSize = 30)
         {
-            var accessToken = GetAccessToken();
+            var accessToken = await GetAccessToken();
+            _logger.LogDebug("Access Token: {accessToken}", accessToken);
+
             var httpClient = _httpClientFactory.CreateClient("Strava");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
@@ -51,7 +62,7 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
                 queryParams.Add("page", pageNumber.ToString());
                 queryParams.Add("per_page", pageSize.ToString());
 
-                var requestUrl = $"{_apiBaseUrl}/athlete/activities{queryParams.ToUrlQueryString()}";
+                var requestUrl = $"{ApiBaseUrl}/athlete/activities{queryParams.ToUrlQueryString()}";
 
                 var response = await httpClient.GetAsync(requestUrl);
                 response.EnsureSuccessStatusCode();
@@ -75,13 +86,13 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
 
         public async Task HydrateActivityCaloriesAsync(StravaActivity activity)
         {
-            var accessToken = GetAccessToken();
+            var accessToken = await GetAccessToken();
             var httpClient = _httpClientFactory.CreateClient("Strava");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
             try
             {
-                var requestUrl = $"{_apiBaseUrl}/activities/{activity.Id}";
+                var requestUrl = $"{ApiBaseUrl}/activities/{activity.Id}";
                 var response = await httpClient.GetAsync(requestUrl);
                 response.EnsureSuccessStatusCode();
                 var responseBodyContent = await response.Content.ReadAsStringAsync();
@@ -101,16 +112,141 @@ namespace ExerciseTrackingAnalytics.Services.Strava.API
             }
         }
 
-        private string GetAccessToken()
+        private async Task<string> GetAccessToken()
         {
-            var accessToken = _contextAccessor.HttpContext?.User.FindFirst($"{StravaAuthentication.AuthenticationScheme.ToLower()}_access_token")?.Value;
+            if (_contextAccessor.HttpContext == null)
+                throw new InvalidOperationException("The Http Context was null");
 
+            var userId = _contextAccessor.HttpContext.User.GetUserId();
+            var tokens = await _userManager.GetTokensAsync(userId, StravaAuthentication.AuthenticationScheme);
+
+            var accessToken = tokens.FirstOrDefault(t => t.Name == "access_token")?.Value;
             if (string.IsNullOrEmpty(accessToken))
             {
-                throw new InvalidOperationException("User access token could not be obtained from the context.  Unable to query Strava for recent activities.");
+                _logger.LogWarning("Unable to retrieve Strava Access Token for user {userId}", userId);
+                throw new InvalidOperationException("User's Strava Access Token could not be obtained from the context.  Unable to query Strava for recent activities.");
             }
 
-            return accessToken;
+            var accessTokenExpiryDateString = tokens.FirstOrDefault(t => t.Name == "expires_at")?.Value;
+
+            if (string.IsNullOrEmpty(accessTokenExpiryDateString) || !DateTimeOffset.TryParse(accessTokenExpiryDateString, out var accessTokenExpiryDateTimeOffset))
+            {
+                _logger.LogWarning("Unable to determine Strava Access Token expiration date for user {userId}", userId);
+                return accessToken;
+            }
+
+            var utcNow = DateTime.UtcNow;
+            var accessTokenExpiryUtc = accessTokenExpiryDateTimeOffset.ToUniversalTime();
+            var isAccessTokenValid = utcNow < accessTokenExpiryUtc;
+
+            if (isAccessTokenValid)
+            {
+                var timeRemaining = accessTokenExpiryUtc - utcNow;
+
+                _logger.LogInformation(
+                    "User's Strava Access Token expires at {accessTokenExpires:o}.  Current time is {utcNow:o}.  Access token is still valid.  Remaining lifetime: {timeRemaining}",
+                    accessTokenExpiryUtc,
+                    utcNow,
+                    timeRemaining);
+
+                return accessToken;
+            }
+
+            _logger.LogInformation(
+                "User's Strava Access Token expired at {accessTokenExpires:o}.  Current time is {utcNow:o}.  Access token is not currently valid.",
+                accessTokenExpiryUtc,
+                utcNow);
+
+            var refreshToken = tokens.FirstOrDefault(t => t.Name == "refresh_token")?.Value;
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                _logger.LogWarning("Unable to retrieve Strava Refresh Token for user {userId}", userId);
+                throw new InvalidOperationException("User's Strava Access Token could not be obtained from the context.  Unable to query Strava for recent activities.");
+            }
+
+            var httpClient = _httpClientFactory.CreateClient("Strava");
+
+            var postBodyContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("client_id", _stravaOptions.ClientId),
+                new KeyValuePair<string, string>("client_secret", _stravaOptions.ClientSecret),
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+            });
+
+            _logger.LogInformation("Attempting Strava token refresh ...");
+
+            var response = await httpClient.PostAsync($"{ApiBaseUrl}/oauth/token", postBodyContent);
+            response.EnsureSuccessStatusCode();
+            var responseData = await response.Content.ReadAsStringAsync();
+            var responseDataParsed = JsonConvert.DeserializeObject<StravaTokenRefreshResponse>(responseData);
+
+            if (responseDataParsed == null)
+            {
+                _logger.LogWarning("Unable to parse response from Strava token refresh");
+                throw new InvalidOperationException("User's Strava Access Token could not be obtained from the context.  Unable to query Strava for recent activities.");
+            }
+
+            _logger.LogInformation("Strava token refresh succeeded.  New access token expires at {newAccessTokenExpiry:o}", responseDataParsed.ExpiresAt.AsUtc());
+            _logger.LogInformation("Persisting updated tokens ...");
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            await _userManager.SetAuthenticationTokenAsync(user, StravaAuthentication.AuthenticationScheme, "access_token", responseDataParsed.AccessToken);
+            await _userManager.SetAuthenticationTokenAsync(user, StravaAuthentication.AuthenticationScheme, "refresh_token", responseDataParsed.RefreshToken);
+            await _userManager.SetAuthenticationTokenAsync(user, StravaAuthentication.AuthenticationScheme, "token_type", responseDataParsed.TokenType);
+            await _userManager.SetAuthenticationTokenAsync(user, StravaAuthentication.AuthenticationScheme, "expires_at", responseDataParsed.ExpiresAt.AsUtc().ToString("o"));
+
+            return responseDataParsed.AccessToken;
+        }
+    }
+
+    public class StravaTokenRefreshResponse
+    {
+        [JsonProperty("access_token")]
+        public string AccessToken { get; set; } = string.Empty;
+
+        private DateTime _expiresAt;
+
+        [JsonProperty("expires_at")]
+        [JsonConverter(typeof(JsonEpochConverter))]
+        public DateTime ExpiresAt { get => _expiresAt; set => _expiresAt = value.AsUtc(); }
+
+        [JsonProperty("expires_in")]
+        public int ExpiresIn { get; set; }
+
+        [JsonProperty("refresh_token")]
+        public string RefreshToken { get; set; } = string.Empty;
+
+        [JsonProperty("token_type")]
+        public string TokenType { get; set; } = string.Empty;
+    }
+
+    public class JsonEpochConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(DateTime) || objectType == typeof(DateTime?);
+        }
+
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        {
+            if (reader.Value == null) return null;
+
+            var t = Convert.ToInt64(reader.Value);
+
+            return t.IsTimestampInMilliseconds() ? GlobalConstants.UnixEpochUtc.AddMilliseconds(t) : GlobalConstants.UnixEpochUtc.AddSeconds(t);
+        }
+
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+        {
+            if (value == null)
+            {
+                writer.WriteNull();
+                return;
+            }
+
+            var d = (DateTime)value;
+            var t = (long)(d - GlobalConstants.UnixEpochUtc).TotalSeconds;
+            writer.WriteValue(t);
         }
     }
 }

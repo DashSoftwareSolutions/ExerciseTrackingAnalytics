@@ -2,7 +2,7 @@
 
 namespace ExerciseTrackingAnalytics.Extensions
 {
-    public static class ClaimsPrincipalExentsions
+    public static class ClaimsPrincipalExtensions
     {
         public static string GetUserFirstName(this ClaimsPrincipal user)
         {
@@ -21,9 +21,8 @@ namespace ExerciseTrackingAnalytics.Extensions
             if (string.IsNullOrWhiteSpace(nameIdentifierClaim))
                 throw new ArgumentException("Could not find the 'name identifier' claim");
 
-            Guid userId;
 
-            if (!Guid.TryParse(nameIdentifierClaim, out userId))
+            if (!Guid.TryParse(nameIdentifierClaim, out Guid userId))
                 throw new ArgumentException(
                     $"'name identifier' claim does not seem to be a GUID type value as expected; value is: '{nameIdentifierClaim}'");
 

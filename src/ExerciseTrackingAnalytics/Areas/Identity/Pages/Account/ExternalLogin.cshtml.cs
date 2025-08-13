@@ -128,11 +128,7 @@ namespace ExerciseTrackingAnalytics.Areas.Identity.Pages.Account
             
             if (result.Succeeded)
             {
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-
-                // Save the user's tokens from the external login provider
-                await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-
+                _logger.LogInformation("User ID {UserId} {Name} logged in with {LoginProvider} provider.", info.Principal.FindFirstValue(ClaimTypes.NameIdentifier), info.Principal.GetUserFullName(), info.LoginProvider);
                 return LocalRedirect(returnUrl);
             }
             

@@ -43,18 +43,25 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
             ClaimActions.MapJsonKey(StravaCustomClaimTypes.UpdatedAt, "updated_at");
             ClaimActions.MapJsonKey(StravaCustomClaimTypes.Premium, "premium");
 
-            // TODO/FIXME: First attempt to get user's access token and such
-            // May not represent best practice
-            // See: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/additional-claims?view=aspnetcore-6.0
-            //SaveTokens = true; // normally you want this set to false
-            SaveTokens = false; // stop storing tokens in the cookie -- we'll get them from the database!
+            SaveTokens = true;
 
-            Events.OnCreatingTicket = (oAuthContext) =>
+            Events.OnCreatingTicket = async (oAuthContext) =>
             {
                 var tokens = oAuthContext.Properties.GetTokens().ToArray();
                 oAuthContext.Properties.StoreTokens(tokens);
 
-                return Task.CompletedTask;
+                if (tokens.Length > 0)
+                {
+                    // We need to store the tokens here, then get them out of the AuthenticationProperties
+                    var userManager = oAuthContext.HttpContext.RequestServices.GetRequiredService<ApplicationUserManager>();
+                    var user = await userManager.FindByLoginAsync(Constants.AuthenticationScheme, oAuthContext.User.GetProperty("id").ToString());
+
+                    foreach (var token in tokens)
+                    {
+                        await userManager.SetAuthenticationTokenAsync(user, Constants.AuthenticationScheme, token.Name, token.Value);
+                        oAuthContext.Properties.Items.Remove($".Token.{token.Name}"); // remove the tokens from the authentication properties
+                    }
+                }
             };
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using ExerciseTrackingAnalytics.Models;
+using ExerciseTrackingAnalytics.ViewModels;
 
 namespace ExerciseTrackingAnalytics.Controllers
 {
@@ -29,9 +29,17 @@ namespace ExerciseTrackingAnalytics.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error([FromQuery] int? statusCode = null)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var errorMessage = ControllerContext.HttpContext.Items["ValidationErrorMessage"]?.ToString();
+            
+            return View(
+                new ErrorViewModel
+                {
+                    ErrorMessage = errorMessage,
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    StatusCode = statusCode
+                });
         }
     }
 }

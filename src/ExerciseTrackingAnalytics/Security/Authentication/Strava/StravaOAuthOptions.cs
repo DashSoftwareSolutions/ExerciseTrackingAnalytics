@@ -59,7 +59,7 @@ namespace ExerciseTrackingAnalytics.Security.Authentication.Strava
                     foreach (var token in tokens)
                     {
                         await userManager.SetAuthenticationTokenAsync(user, Constants.AuthenticationScheme, token.Name, token.Value);
-                        oAuthContext.Properties.Items.Remove($".Token.{token.Name}"); // remove the tokens from the authentication properties
+                        oAuthContext.Properties.Items.Remove($".Token.{token.Name}"); // remove the token from the authentication properties so it doesn't go in the cookie
                     }
                 }
             };

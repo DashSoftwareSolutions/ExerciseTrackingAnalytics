@@ -77,43 +77,14 @@
 </div>
 
 @* Sync Activities Modal *@
-<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="dashboard_page--activities_sync_modal" tabindex="-1" aria-labelledby="dashboard_page--activities_sync_modal_title" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="dashboard_page--activities_sync_modal_title">Check for Recent Activities?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="dashboard_page--activities_sync_modal_body">
-                Check for recent Strava Activities and sync them to the database?
-            </div>
-            <div class="modal-footer">
-                <div id="dashboard_page--activities_sync_modal_yes_no_buttons">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="dashboard_page--activities_sync_modal_no_button">No</button>
-                    <button type="button" class="btn btn-primary" id="dashboard_page--activities_sync_modal_yes_button">Yes</button>
-                </div>
-                <div id="dashboard_page--activities_sync_ok_button_container" style="display: none">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="dashboard_page--activities_sync_modal_ok_button">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<partial name="_StravaActivitySyncModalPartial" />
 
 @section Scripts {
     <script type="text/javascript">
         (function () {
-            const stravaSyncCheckCookieName = 'last-strava-sync-check';
             const localNow = luxon.DateTime.local();
 
             // Get references to various elements of interest
-            //     Activity Sync Modal
-            const activitySyncModalBody = document.getElementById('dashboard_page--activities_sync_modal_body');
-            const activitySyncModalYesNoButtonsContainer = document.getElementById('dashboard_page--activities_sync_modal_yes_no_buttons');
-            const activitySyncModalOkButtonContainer = document.getElementById('dashboard_page--activities_sync_ok_button_container');
-            const activitySyncModalYesButton = document.getElementById('dashboard_page--activities_sync_modal_yes_button');
-            const activitySyncModalNoButton = document.getElementById('dashboard_page--activities_sync_modal_no_button');
-            const activitySyncModalOkButton = document.getElementById('dashboard_page--activities_sync_modal_ok_button');
             //     Dashboard Data Loading Spinner
             const dashboardLoadingSpinner = document.getElementById('dashboard_page--loading_spinner');
             //     Dashboard Main Content Container
@@ -203,61 +174,13 @@
                     });
             }
 
-            // Activity Sync Modal Yes Button Click Event Handler
-            activitySyncModalYesButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                Cookies.set(stravaSyncCheckCookieName, new Date().toJSON());
-                console.log('Exercise Tracking Analytics: Syncing recent Strava activities...');
-                activitySyncModalBody.innerText = 'Checking for recent activities...';
-                activitySyncModalYesButton.disabled = true;
-                activitySyncModalNoButton.disabled = true;
-
-                fetch('/api/strava-activity-sync', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(async (response) => {
-                        console.log(`Exercise Tracking Analytics: Recent Activities Sync API Call Response Status: ${response.status} ${response.statusText}`);
-                        const jsonResult = await response.json();
-                        console.log('Exercise Tracking Analytics: Recent Activities Sync API Call Response JSON Data:', jsonResult);
-
-                        if (response.ok) {
-                            activitySyncModalBody.innerText = (jsonResult && jsonResult.message) ?
-                                jsonResult.message :
-                                'Recent activity check complete.';
-                        } else {
-                            activitySyncModalBody.innerText = (jsonResult && jsonResult.message) ?
-                                jsonResult.message :
-                                'We were unable to sync recent Strava Activities due to an unexpected system error.';
-                        }
-
-                        activitySyncModalYesNoButtonsContainer.style.display = 'none';
-                        activitySyncModalOkButtonContainer.style.display = 'block';
-                    });
-            });
-
-            // Activity Sync Modal No Button Click Event Handler
-            activitySyncModalNoButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                Cookies.set(stravaSyncCheckCookieName, new Date().toJSON());
-                fetchDashboardData();
-            });
-
-            // Activity Sync Modal Ok Button Click Event Handler
-            activitySyncModalOkButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                fetchDashboardData();
-            });
+            const activitySyncModal = new StravaActivitiesSyncModal(fetchDashboardData, fetchDashboardData);
 
             // Open the Activities Sync Modal
-            const lastSyncCookieValue = Cookies.get(stravaSyncCheckCookieName);
-
-            if (!lastSyncCookieValue) {
-                const activitySyncModal = new bootstrap.Modal(document.getElementById('dashboard_page--activities_sync_modal'));
-                activitySyncModal.show();
+            if (!activitySyncModal.hasLastCheckCookie()) {
+                activitySyncModal.open();
+            } else {
+                fetchDashboardData();
             }
         })();
     </script>

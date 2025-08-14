@@ -14,13 +14,24 @@
 <div class="row mb-4">
     <div class="col d-flex flex-row justify-content-center align-items-center">
         <div class="me-5">
-            <i id="food-diary--back_one_day_button" class="bi bi-chevron-left fw-bold" style="font-size: 2rem; cursor: pointer;"></i>
+            <i id="food-diary_page--back_one_day_button" class="bi bi-chevron-left fw-bold" style="font-size: 2rem; cursor: pointer;"></i>
         </div>
-        <h3 class="display-6 fw-bold food-diary--date-header"></h3>
+        <h3 class="display-6 fw-bold food-diary_page--date-header"></h3>
         <div class="ms-5">
-            <i id="food_diary--fwd_one_day_button" class="bi bi-chevron-right fw-bold" style="font-size: 2rem;"></i>
+            <i id="food_diary_page--fwd_one_day_button" class="bi bi-chevron-right fw-bold" style="font-size: 2rem;"></i>
         </div>
     </div>
+</div>
+
+@* Loading Spinner while we're fetching the data *@
+<div id="food_diary_page--loading_spinner" class="align-items-center justify-content-center" style="display: none !important; height: calc(100vh - 250px)">
+    <div class="spinner-border" role="status" style="width: 5rem; height: 5rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div id="food_diary_page--main_content_container" style="display: none">
+    <h1 class="text-center mt-5">TODO: Food Diary</h1>
 </div>
 
 @section Scripts {
@@ -33,7 +44,7 @@
 
             const viewportWidth = window.innerWidth;
             console.log('Viewport Width:', viewportWidth);
-            const dateHeader = document.querySelector('.food-diary--date-header');
+            const dateHeader = document.querySelector('.food-diary_page--date-header');
 
             if (viewportWidth < 768) {
                 dateHeader.textContent = luxon.DateTime.fromISO(pageDate).toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
@@ -41,8 +52,8 @@
                 dateHeader.textContent = luxon.DateTime.fromISO(pageDate).toLocaleString({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
             }
 
-            const backOneDayIconButton = document.getElementById('food-diary--back_one_day_button');
-            const fwdOneDayIconButton = document.getElementById('food_diary--fwd_one_day_button');
+            const backOneDayIconButton = document.getElementById('food-diary_page--back_one_day_button');
+            const fwdOneDayIconButton = document.getElementById('food_diary_page--fwd_one_day_button');
 
             if (pageDate === localToday) {
                 fwdOneDayIconButton.classList.toggle('disabled');
@@ -61,6 +72,40 @@
                 const targetDate = luxon.DateTime.fromISO(pageDate).plus({ days: 1 }).toISODate();
                 window.location = `/food-diary/${targetDate}`;
             });
+
+            const loadingSpinner = document.getElementById('food_diary_page--loading_spinner');
+            const mainContentContainer = document.getElementById('food_diary_page--main_content_container');
+            const userTimeZone = new luxon.SystemZone().name;
+            console.log('User Time Zone:', userTimeZone);
+
+            function fetchFoodDiaryData() {
+                loadingSpinner.style.display = 'flex';
+
+                fetch(`/api/food-diary?date=${pageDate}&tz=${userTimeZone}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(async (response) => {
+                        console.log(`Exercise Tracking Analytics: Food Diary Data Fetch API Call Response Status: ${response.status} ${response.statusText}`);
+                        const jsonResult = await response.json();
+                        console.log('Exercise Tracking Analytics: Food Diary Data Fetch API Call Response JSON Data:', jsonResult);
+
+                        if (response.ok) {
+                            // Bind the data to a Knockout model and render all the things
+                        } else {
+                            // handle an error
+                        }
+                    })
+                    .finally(() => {
+                        loadingSpinner.style.display = 'none';
+                        mainContentContainer.style.display = 'block';
+                    });
+            }
+
+            fetchFoodDiaryData();
         })();
     </script>
 }

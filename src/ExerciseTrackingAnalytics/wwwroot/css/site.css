@@ -15,15 +15,15 @@ html {
     margin-bottom: 77px;
 }
 
-.food-diary--date-header {
+.food-diary_page--date-header {
     text-align: center;
 }
 
-#food_diary--fwd_one_day_button {
+#food_diary_page--fwd_one_day_button {
     cursor: pointer;
 }
 
-#food_diary--fwd_one_day_button.disabled {
+#food_diary_page--fwd_one_day_button.disabled {
     pointer-events: none;
     color: #adb5bd; /* $gray-500 */
 }

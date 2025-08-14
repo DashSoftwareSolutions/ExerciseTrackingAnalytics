@@ -103,6 +103,7 @@
 @section Scripts {
     <script type="text/javascript">
         (function () {
+            const stravaSyncCheckCookieName = 'last-strava-sync-check';
             const localNow = luxon.DateTime.local();
 
             // Get references to various elements of interest
@@ -205,6 +206,7 @@
             // Activity Sync Modal Yes Button Click Event Handler
             activitySyncModalYesButton.addEventListener('click', (e) => {
                 e.preventDefault();
+                Cookies.set(stravaSyncCheckCookieName, new Date().toJSON());
                 console.log('Exercise Tracking Analytics: Syncing recent Strava activities...');
                 activitySyncModalBody.innerText = 'Checking for recent activities...';
                 activitySyncModalYesButton.disabled = true;
@@ -240,6 +242,7 @@
             // Activity Sync Modal No Button Click Event Handler
             activitySyncModalNoButton.addEventListener('click', (e) => {
                 e.preventDefault();
+                Cookies.set(stravaSyncCheckCookieName, new Date().toJSON());
                 fetchDashboardData();
             });
 
@@ -250,8 +253,12 @@
             });
 
             // Open the Activities Sync Modal
-            const activitySyncModal = new bootstrap.Modal(document.getElementById('dashboard_page--activities_sync_modal'));
-            activitySyncModal.show();
+            const lastSyncCookieValue = Cookies.get(stravaSyncCheckCookieName);
+
+            if (!lastSyncCookieValue) {
+                const activitySyncModal = new bootstrap.Modal(document.getElementById('dashboard_page--activities_sync_modal'));
+                activitySyncModal.show();
+            }
         })();
     </script>
 }

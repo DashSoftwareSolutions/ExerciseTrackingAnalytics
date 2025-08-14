@@ -12,7 +12,55 @@
 }
 
 <div class="row mb-4">
-    <div class="col text-center">
-        <h1 class="display-4">@date?.ToString("D")</h1>
+    <div class="col d-flex flex-row justify-content-center align-items-center">
+        <div class="me-5">
+            <i id="food-diary--back_one_day_button" class="bi bi-chevron-left fw-bold" style="font-size: 2rem; cursor: pointer;"></i>
+        </div>
+        <h3 class="display-6 fw-bold food-diary--date-header"></h3>
+        <div class="ms-5">
+            <i id="food_diary--fwd_one_day_button" class="bi bi-chevron-right fw-bold" style="font-size: 2rem;"></i>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            const pageDate = '@(date.Value.ToString("yyyy-MM-dd"))';
+            const localToday = luxon.DateTime.local().toISODate();
+            console.log('Page Date:', pageDate);
+            console.log('Today:', localToday);
+
+            const viewportWidth = window.innerWidth;
+            console.log('Viewport Width:', viewportWidth);
+            const dateHeader = document.querySelector('.food-diary--date-header');
+
+            if (viewportWidth < 768) {
+                dateHeader.textContent = luxon.DateTime.fromISO(pageDate).toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            } else {
+                dateHeader.textContent = luxon.DateTime.fromISO(pageDate).toLocaleString({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            }
+
+            const backOneDayIconButton = document.getElementById('food-diary--back_one_day_button');
+            const fwdOneDayIconButton = document.getElementById('food_diary--fwd_one_day_button');
+
+            if (pageDate === localToday) {
+                fwdOneDayIconButton.classList.toggle('disabled');
+            }
+
+            backOneDayIconButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Back one day icon button clicked!');
+                const targetDate = luxon.DateTime.fromISO(pageDate).minus({ days: 1 }).toISODate();
+                window.location = `/food-diary/${targetDate}`;
+            });
+
+            fwdOneDayIconButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Forwward one day icon button clicked!');
+                const targetDate = luxon.DateTime.fromISO(pageDate).plus({ days: 1 }).toISODate();
+                window.location = `/food-diary/${targetDate}`;
+            });
+        })();
+    </script>
+}

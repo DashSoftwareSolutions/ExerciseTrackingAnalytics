@@ -15,6 +15,19 @@ html {
     margin-bottom: 77px;
 }
 
+.food-diary--date-header {
+    text-align: center;
+}
+
+#food_diary--fwd_one_day_button {
+    cursor: pointer;
+}
+
+#food_diary--fwd_one_day_button.disabled {
+    pointer-events: none;
+    color: #adb5bd; /* $gray-500 */
+}
+
 .footer-left-col,
 .footer-right-col {
     text-align: center;
@@ -37,6 +50,11 @@ html {
 
     .footer-right-col {
         text-align: right;
+    }
+
+    .food-diary--date-header {
+        text-align: center;
+        width: 600px;
     }
 }
 

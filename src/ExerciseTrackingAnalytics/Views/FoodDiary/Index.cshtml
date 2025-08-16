@@ -93,10 +93,100 @@
         </div>
 
         @* Lunch *@
+        <div class="card mt-5">
+            <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--lunch_details_container" aria-expanded="true" aria-controls="food_diary_page--lunch_details_container">
+                Lunch
+            </h5>
+            <div class="card-body collapse show" id="food_diary_page--lunch_details_container">
+                <div data-bind="hidden: lunch.foods().length > 0">No food yet.</div>
+                <div class="list-group list-group-flush" data-bind="visible: lunch.foods().length > 0">
+                    <div class="container list-group-item ps-0 pe-0 fw-bold">
+                        <div class="row">
+                            <div class="col-6 col-lg-9">Food</div>
+                            <div class="col-3 col-lg-2">Time</div>
+                            <div class="col-3 col-lg-1">Calories</div>
+                        </div>
+                    </div>
+                    <!-- ko foreach: lunch.foods -->
+                    <div class="container list-group-item ps-0 pe-0">
+                        <div class="row">
+                            <div class="col-6 col-lg-9" data-bind="text: food"></div>
+                            <div class="col-3 col-lg-2" data-bind="text: timeOfDayFormatted"></div>
+                            <div class="col-3 col-lg-1 text-end" data-bind="text: caloriesFormatted"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="card-footer d-flex">
+                <div class="fw-bold me-auto">TOTAL CALORIES:</div>
+                <div class="fw-bold" data-bind="text: lunch.totalCaloriesFormatted"></div>
+            </div>
+        </div>
 
         @* Dinner *@
+        <div class="card mt-5">
+            <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--dinner_details_container" aria-expanded="true" aria-controls="food_diary_page--lunch_details_container">
+                Dinner
+            </h5>
+            <div class="card-body collapse show" id="food_diary_page--dinner_details_container">
+                <div data-bind="hidden: dinner.foods().length > 0">No food yet.</div>
+                <div class="list-group list-group-flush" data-bind="visible: dinner.foods().length > 0">
+                    <div class="container list-group-item ps-0 pe-0 fw-bold">
+                        <div class="row">
+                            <div class="col-6 col-lg-9">Food</div>
+                            <div class="col-3 col-lg-2">Time</div>
+                            <div class="col-3 col-lg-1">Calories</div>
+                        </div>
+                    </div>
+                    <!-- ko foreach: dinner.foods -->
+                    <div class="container list-group-item ps-0 pe-0">
+                        <div class="row">
+                            <div class="col-6 col-lg-9" data-bind="text: food"></div>
+                            <div class="col-3 col-lg-2" data-bind="text: timeOfDayFormatted"></div>
+                            <div class="col-3 col-lg-1 text-end" data-bind="text: caloriesFormatted"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="card-footer d-flex">
+                <div class="fw-bold me-auto">TOTAL CALORIES:</div>
+                <div class="fw-bold" data-bind="text: dinner.totalCaloriesFormatted"></div>
+            </div>
+        </div>
 
         @* Snacks *@
+        <div class="card mt-5">
+            <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--snacks_details_container" aria-expanded="true" aria-controls="food_diary_page--lunch_details_container">
+                Snacks
+            </h5>
+            <div class="card-body collapse show" id="food_diary_page--snacks_details_container">
+                <div data-bind="hidden: snack.foods().length > 0">No food yet.</div>
+                <div class="list-group list-group-flush" data-bind="visible: snack.foods().length > 0">
+                    <div class="container list-group-item ps-0 pe-0 fw-bold">
+                        <div class="row">
+                            <div class="col-6 col-lg-9">Food</div>
+                            <div class="col-3 col-lg-2">Time</div>
+                            <div class="col-3 col-lg-1">Calories</div>
+                        </div>
+                    </div>
+                    <!-- ko foreach: snack.foods -->
+                    <div class="container list-group-item ps-0 pe-0">
+                        <div class="row">
+                            <div class="col-6 col-lg-9" data-bind="text: food"></div>
+                            <div class="col-3 col-lg-2" data-bind="text: timeOfDayFormatted"></div>
+                            <div class="col-3 col-lg-1 text-end" data-bind="text: caloriesFormatted"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="card-footer d-flex">
+                <div class="fw-bold me-auto">TOTAL CALORIES:</div>
+                <div class="fw-bold" data-bind="text: snack.totalCaloriesFormatted"></div>
+            </div>
+        </div>
 
         @* Exercise *@
         <div class="card mt-5 mb-5">
@@ -247,7 +337,7 @@
                     foods: ko.observableArray([]),
                 };
 
-                this.snacks = {
+                this.snack = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
@@ -295,24 +385,21 @@
                             }
 
                             if (jsonResult.meals.length) {
-                                const breakfast = jsonResult.meals.find((m) => m.meal === 'Breakfast');
+                                jsonResult.meals.forEach((meal) => {
+                                    const foodDiaryViewModelMeal = foodDiaryViewModel[`${meal.meal.toLowerCase()}`];
+                                    foodDiaryViewModelMeal.totalCalories(meal.totalCalories);
+                                    foodDiaryViewModelMeal.totalCaloriesFormatted(calorieFormatter.format(meal.totalCalories));
 
-                                if (breakfast) {
-                                    foodDiaryViewModel.breakfast.totalCalories(breakfast.totalCalories);
-                                    foodDiaryViewModel.breakfast.totalCaloriesFormatted(calorieFormatter.format(breakfast.totalCalories));
-
-                                    breakfast.foods.forEach((food) => {
-                                        console.log('Food:', food);
-
+                                    meal.foods.forEach((food) => {
                                         const updatedFood = {
                                             ...food,
                                             timeOfDayFormatted: luxon.DateTime.local().startOf('day').plus(luxon.Duration.fromISOTime(food.timeOfDay)).toLocaleString({ timeStyle: 'short' }),
                                             caloriesFormatted: calorieFormatter.format(food.calories),
                                         };
 
-                                        foodDiaryViewModel.breakfast.foods.push(updatedFood);
+                                        foodDiaryViewModelMeal.foods.push(updatedFood);
                                     });
-                                }
+                                });
                             }
                         } else {
                             // handle an error

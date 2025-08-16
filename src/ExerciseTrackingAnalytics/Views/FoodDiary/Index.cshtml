@@ -31,8 +31,41 @@
 </div>
 
 <div id="food_diary_page--main_content_container" style="display: none">
-    <h1 class="text-center mt-5">TODO: Food Diary</h1>
+    <div id="food_diary_page--action_buttons_container" class="d-flex flex-row justify-content-center">
+        <button class="btn btn-primary me-2 food_diary_page--action_button" id="food_diary_page--add_food_button" data-bs-target="#food_diary_page--add_food_modal">Add Food</button>
+        <button class="btn btn-dark food_diary_page--action_button" id="food_diary_page--sync-activities_button">Sync Activities</button>
+    </div>
+    <div id="food_diary_page--no_data_message" class="mt-5 text-center" data-bind="hidden: hasAnyData">
+        You have no food and exercise data for this date.
+    </div>
+    <div id="food_diary_page--no_data_message" class="mt-5" data-bind="visible: hasAnyData">
+        Some Data
+    </div>
 </div>
+
+@* Add Food Modal *@
+<div class="modal fade" id="food_diary_page--add_food_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="food_diary_page--add_food_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" id="food_diary_page--add_food_modal_dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="food_diary_page--add_food_modal_title">Add Food</h1>
+                <button type="button" class="btn-close" id="food_diary_page--add_food_modal_header_close_button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This is some placeholder content to show a vertically centered modal. We've added some extra copy here to show how vertically centering the modal works when combined with scrollable modals. We also use some repeated line breaks to quickly extend the height of the content, thereby triggering the scrolling. When content becomes longer than the predefined max-height of modal, content will be cropped and scrollable within the modal.</p>
+                <br><br><br><br><br><br><br><br><br><br>
+                <p>Just like that.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="food_diary_page--add_food_modal_footer_close_button">Close</button>
+                <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal_save_button">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Sync Activities Modal *@
+<partial name="_StravaActivitySyncModalPartial" />
 
 @section Scripts {
     <script type="text/javascript">
@@ -78,7 +111,35 @@
             const userTimeZone = new luxon.SystemZone().name;
             console.log('User Time Zone:', userTimeZone);
 
+            const locale = 'en-US'; // TODO: Make it user-selectable / settable by preferences, etc.
+            const numberFormatter = new Intl.NumberFormat(locale);
+
+            // Define Knockout View Model
+            function FoodDiaryViewModel() {
+                // Top level stats
+                this.exerciseCalories = ko.observable(0);
+                this.exerciseCaloriesFormatted = ko.computed(() => numberFormatter.format(this.exerciseCalories()));
+                this.foodCalories = ko.observable(0);
+                this.foodCaloriesFormatted = ko.computed(() => numberFormatter.format(this.foodCalories()));
+                this.netCalories = ko.observable(0);
+                this.netCaloriesFormatted = ko.computed(() => numberFormatter.format(this.netCalories()));
+
+                this.hasExerciseData = ko.computed(() => this.exerciseCalories() > 0);
+                this.hasFoodData = ko.computed(() => this.foodCalories() > 0);
+                this.hasAnyData = ko.computed(() => this.hasExerciseData() || this.hasFoodData());
+
+                // Specifics
+                this.exerciseEntries = ko.observableArray([]);
+                this.breakfast = ko.observable({}); // TODO: Define the structure a bit better
+                this.lunch = ko.observable({});
+                this.dinner = ko.observable({});
+                this.snacks = ko.observable({});
+            }
+
+            let foodDiaryViewModel = new FoodDiaryViewModel();
+
             function fetchFoodDiaryData() {
+                mainContentContainer.style.display = 'none';
                 loadingSpinner.style.display = 'flex';
 
                 fetch(`/api/food-diary?date=${pageDate}&tz=${userTimeZone}`, {
@@ -94,7 +155,9 @@
                         console.log('Exercise Tracking Analytics: Food Diary Data Fetch API Call Response JSON Data:', jsonResult);
 
                         if (response.ok) {
-                            // Bind the data to a Knockout model and render all the things
+                            foodDiaryViewModel.exerciseCalories(jsonResult.exerciseCalories);
+                            foodDiaryViewModel.foodCalories(jsonResult.foodCalories);
+                            foodDiaryViewModel.netCalories(jsonResult.netCalories);
                         } else {
                             // handle an error
                         }
@@ -105,6 +168,40 @@
                     });
             }
 
+            // Activity Sync Modal
+            const activitySyncModal = new StravaActivitiesSyncModal(fetchFoodDiaryData);
+
+            // Add Food Modal
+            const addFoodModal = new bootstrap.Modal(document.getElementById('food_diary_page--add_food_modal'));
+
+            // Handle Add Food Modal and Save Button
+            const addFoodButton = document.getElementById('food_diary_page--add_food_button');
+            const syncActivitiesButton = document.getElementById('food_diary_page--sync-activities_button');
+            const saveNewFoodButton = document.getElementById('food_diary_page--add_food_modal_save_button');
+
+            syncActivitiesButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                activitySyncModal.open();
+            });
+
+            addFoodButton.addEventListener('click', (e) => {
+                addFoodModal.show();
+            });
+
+            saveNewFoodButton.addEventListener('click', (e) => {
+                console.log('Save it!');
+                saveNewFoodButton.blur();
+                addFoodModal.hide();
+
+                // TODO: Save new food
+                
+                fetchFoodDiaryData(); // move this to the callback after we've saved
+            });
+
+            // Bind Knockout
+            ko.applyBindings(foodDiaryViewModel);
+
+            // Fetch the food diary data
             fetchFoodDiaryData();
         })();
     </script>

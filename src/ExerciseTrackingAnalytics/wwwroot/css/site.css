@@ -28,6 +28,10 @@ html {
     color: #adb5bd; /* $gray-500 */
 }
 
+.food_diary_page--action_button {
+    width: 111px;
+}
+
 .footer-left-col,
 .footer-right-col {
     text-align: center;
@@ -52,9 +56,13 @@ html {
         text-align: right;
     }
 
-    .food-diary--date-header {
+    .food-diary_page--date-header {
         text-align: center;
         width: 600px;
+    }
+
+    .food_diary_page--action_button {
+        width: 130px;
     }
 }
 

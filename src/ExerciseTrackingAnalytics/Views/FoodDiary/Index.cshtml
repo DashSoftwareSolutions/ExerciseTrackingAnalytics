@@ -237,20 +237,56 @@
                 <button type="button" class="btn-close" id="food_diary_page--add_food_modal_header_close_button" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="food_diary_page--add_food_meal_select" class="form-label">Meal</label>
-                    <select class="form-select" aria-label="Meal" data-bind="value: addNewFoodEntry.meal">
-                        <option selected>Select Meal</option>
-                        <option value="Breakfast">Breakfast</option>
-                        <option value="Lunch">Lunch</option>
-                        <option value="Dinner">Dinner</option>
-                        <option value="Snack">Snack</option>
-                    </select>
+                <nav>
+                    <ul class="nav nav-tabs" id="food_diary_page--add_food_modal_nav_tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="food_diary_page--add_food_modal_search_tab" data-bs-toggle="tab" data-bs-target="#food_diary_page--add_food_modal_search_tab_pane" type="button" role="tab" aria-controls="food_diary_page--add_food_modal_search_tab_pane" aria-selected="true">Search Food Library</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="food_diary_page--add_food_modal_create_tab" data-bs-toggle="tab" data-bs-target="#food_diary_page--add_food_modal_create_tab_pane" type="button" role="tab" aria-controls="food_diary_page--add_food_modal_create_tab_pane" aria-selected="false">Create New Food</button>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="tab-content" id="food_diary_page--add_food_modal_tab_content" style="height: 350px">
+                    <div class="tab-pane fade show active" id="food_diary_page--add_food_modal_search_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_search_tab" tabindex="0">
+                        ... SEARCH ...
+                    </div>
+                    <div class="tab-pane fade" id="food_diary_page--add_food_modal_create_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_create_tab" tabindex="0">
+                        ... CREATE ...
+                    </div>
                 </div>
-
+                <div class="mt-3">
+                    <div class="mb-3 container ps-0 pe-0">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label"># of Servings</label>
+                                <input type="number" class="form-control" id="food_diary_page--add_food_modal_num_servings_input" min="1" data-bind="value: addNewFoodEntry.numServings" />
+                            </div>
+                            <div class="col">
+                                TOTAL CALORIES
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label for="food_diary_page--add_food_meal_select" class="form-label">Meal</label>
+                                <select class="form-select" aria-label="Meal" data-bind="value: addNewFoodEntry.meal">
+                                    <option selected>Select Meal</option>
+                                    <option value="Breakfast">Breakfast</option>
+                                    <option value="Lunch">Lunch</option>
+                                    <option value="Dinner">Dinner</option>
+                                    <option value="Snack">Snack</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label">Time of Day</label>
+                                <input type="time" class="form-control" id="food_diary_page--add_food_modal_time_of_day_input" data-bind="value: addNewFoodEntry.timeOfDay" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="food_diary_page--add_food_modal_footer_close_button">Close</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="food_diary_page--add_food_modal_footer_close_button">Cancel</button>
                 <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal_save_button">Save changes</button>
             </div>
         </div>
@@ -353,6 +389,8 @@
 
                 this.addNewFoodEntry = {
                     meal: ko.observable(''),
+                    numServings: ko.observable(1),
+                    timeOfDay: ko.observable(''),
                 };
             }
 

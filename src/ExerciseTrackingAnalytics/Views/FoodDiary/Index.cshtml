@@ -38,7 +38,7 @@
     <div id="food_diary_page--no_data_message" class="mt-5 text-center" data-bind="hidden: hasAnyData">
         You have no food and exercise data for this date.
     </div>
-    <div id="food_diary_page--no_data_message" class="mt-5" data-bind="visible: hasAnyData">
+    <div id="food_diary_page--data_container" class="mt-5" data-bind="visible: hasAnyData">
         @* Calorie Summary *@
         <div class="card">
             <h5 class="card-header">
@@ -61,6 +61,36 @@
         </div>
 
         @* Breakfast *@
+        <div class="card mt-5">
+            <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--breakfast_details_container" aria-expanded="true" aria-controls="food_diary_page--breakfast_details_container">
+                Breakfast
+            </h5>
+            <div class="card-body collapse show" id="food_diary_page--breakfast_details_container">
+                <div data-bind="hidden: breakfast.foods().length > 0">No food yet.</div>
+                <div class="list-group list-group-flush" data-bind="visible: breakfast.foods().length > 0">
+                    <div class="container list-group-item ps-0 pe-0 fw-bold">
+                        <div class="row">
+                            <div class="col-6 col-lg-9">Food</div>
+                            <div class="col-3 col-lg-2">Time</div>
+                            <div class="col-3 col-lg-1">Calories</div>
+                        </div>
+                    </div>
+                    <!-- ko foreach: breakfast.foods -->
+                    <div class="container list-group-item ps-0 pe-0">
+                        <div class="row">
+                            <div class="col-6 col-lg-9" data-bind="text: food"></div>
+                            <div class="col-3 col-lg-2" data-bind="text: timeOfDayFormatted"></div>
+                            <div class="col-3 col-lg-1 text-end" data-bind="text: caloriesFormatted"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="card-footer d-flex">
+                <div class="fw-bold me-auto">TOTAL CALORIES:</div>
+                <div class="fw-bold" data-bind="text: breakfast.totalCaloriesFormatted"></div>
+            </div>
+        </div>
 
         @* Lunch *@
 
@@ -69,13 +99,13 @@
         @* Snacks *@
 
         @* Exercise *@
-        <div class="card mt-5">
+        <div class="card mt-5 mb-5">
             <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--exercise_details_container" aria-expanded="true" aria-controls="food_diary_page--exercise_details_container">
                 Exercise
             </h5>
             <div class="card-body collapse show" id="food_diary_page--exercise_details_container">
                 <div data-bind="hidden: hasExerciseData">
-                    You have no exercise yet for this date.
+                    No exercise yet.
                 </div>
                 <div class="list-group list-group-flush" data-bind="visible: hasExerciseData">
                     <div class="container list-group-item ps-0 pe-0 fw-bold">
@@ -198,10 +228,30 @@
 
                 // Specifics
                 this.exerciseEntries = ko.observableArray([]);
-                this.breakfast = ko.observable({}); // TODO: Define the structure a bit better
-                this.lunch = ko.observable({});
-                this.dinner = ko.observable({});
-                this.snacks = ko.observable({});
+
+                this.breakfast = {
+                    totalCalories: ko.observable(0),
+                    totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
+                    foods: ko.observableArray([]),
+                };
+                
+                this.lunch = {
+                    totalCalories: ko.observable(0),
+                    totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
+                    foods: ko.observableArray([]),
+                };
+
+                this.dinner = {
+                    totalCalories: ko.observable(0),
+                    totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
+                    foods: ko.observableArray([]),
+                };
+
+                this.snacks = {
+                    totalCalories: ko.observable(0),
+                    totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
+                    foods: ko.observableArray([]),
+                };
             }
 
             let foodDiaryViewModel = new FoodDiaryViewModel();
@@ -242,6 +292,27 @@
 
                                     foodDiaryViewModel.exerciseEntries.push(updatedItem);
                                 });
+                            }
+
+                            if (jsonResult.meals.length) {
+                                const breakfast = jsonResult.meals.find((m) => m.meal === 'Breakfast');
+
+                                if (breakfast) {
+                                    foodDiaryViewModel.breakfast.totalCalories(breakfast.totalCalories);
+                                    foodDiaryViewModel.breakfast.totalCaloriesFormatted(calorieFormatter.format(breakfast.totalCalories));
+
+                                    breakfast.foods.forEach((food) => {
+                                        console.log('Food:', food);
+
+                                        const updatedFood = {
+                                            ...food,
+                                            timeOfDayFormatted: luxon.DateTime.local().startOf('day').plus(luxon.Duration.fromISOTime(food.timeOfDay)).toLocaleString({ timeStyle: 'short' }),
+                                            caloriesFormatted: calorieFormatter.format(food.calories),
+                                        };
+
+                                        foodDiaryViewModel.breakfast.foods.push(updatedFood);
+                                    });
+                                }
                             }
                         } else {
                             // handle an error

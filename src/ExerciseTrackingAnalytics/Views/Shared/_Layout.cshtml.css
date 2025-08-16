@@ -40,7 +40,7 @@ button.accept-policy {
 }
 
 .footer {
-  position: absolute;
+  /* position: absolute; */ /* disable "sticky" footer on the bottom so main content can grow vertically */
   bottom: 0;
   width: 100%;
   white-space: nowrap;

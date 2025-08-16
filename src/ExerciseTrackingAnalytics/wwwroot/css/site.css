@@ -91,5 +91,5 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    /* margin-bottom: 60px; */ /* disable margin for "sticky" footer on the bottom so main content can grow vertically */
 }

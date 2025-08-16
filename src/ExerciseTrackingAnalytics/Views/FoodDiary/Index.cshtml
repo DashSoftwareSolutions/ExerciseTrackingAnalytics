@@ -39,6 +39,7 @@
         You have no food and exercise data for this date.
     </div>
     <div id="food_diary_page--no_data_message" class="mt-5" data-bind="visible: hasAnyData">
+        @* Calorie Summary *@
         <div class="card">
             <h5 class="card-header">
                 Summary
@@ -56,6 +57,52 @@
                     <div class="text-secondary small">Net Calories</div>
                     <div class="fs-4 fw-bold" data-bind="text: netCaloriesFormatted"></div>
                 </div>
+            </div>
+        </div>
+
+        @* Breakfast *@
+
+        @* Lunch *@
+
+        @* Dinner *@
+
+        @* Snacks *@
+
+        @* Exercise *@
+        <div class="card mt-5">
+            <h5 class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#food_diary_page--exercise_details_container" aria-expanded="true" aria-controls="food_diary_page--exercise_details_container">
+                Exercise
+            </h5>
+            <div class="card-body collapse show" id="food_diary_page--exercise_details_container">
+                <div data-bind="hidden: hasExerciseData">
+                    You have no exercise yet for this date.
+                </div>
+                <div class="list-group list-group-flush" data-bind="visible: hasExerciseData">
+                    <div class="container list-group-item ps-0 pe-0 fw-bold">
+                        <div class="row">
+                            <div class="col">Activity</div>
+                            <div class="col">Start</div>
+                            <div class="col">Duration</div>
+                            <div class="col">Distance</div>
+                            <div class="col">Calories</div>
+                        </div>
+                    </div>
+                    <!-- ko foreach: exerciseEntries -->
+                    <div class="container list-group-item ps-0 pe-0">
+                        <div class="row">
+                            <div class="col" data-bind="text: sportType"></div>
+                            <div class="col" data-bind="text: formattedLocalStartTime"></div>
+                            <div class="col" data-bind="text: movingTime"></div>
+                            <div class="col" data-bind="text: formattedDistance"></div>
+                            <div class="col text-end" data-bind="text: formattedCalories"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="card-footer d-flex">
+                <div class="fw-bold me-auto">TOTAL CALORIES:</div>
+                <div class="fw-bold" data-bind="text: exerciseCaloriesFormatted" />
             </div>
         </div>
     </div>
@@ -130,17 +177,20 @@
             console.log('User Time Zone:', userTimeZone);
 
             const locale = 'en-US'; // TODO: Make it user-selectable / settable by preferences, etc.
-            const numberFormatter = new Intl.NumberFormat(locale);
+            const measurementSystem = 'UnitedStates'; // choices are UnitedStates and MetricSystem.  TODO: Make it so user can choose?
+            const distanceUnit = 'mile'; // TODO: Make it data-driven and dependent on `measurementSystem`
+            const calorieFormatter = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1, roundingMode: 'floor' });
+            const distanceFormatter = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2, roundingMode: 'floor', style: 'unit', unit: distanceUnit });
 
             // Define Knockout View Model
             function FoodDiaryViewModel() {
                 // Top level stats
                 this.exerciseCalories = ko.observable(0);
-                this.exerciseCaloriesFormatted = ko.computed(() => numberFormatter.format(this.exerciseCalories()));
+                this.exerciseCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.exerciseCalories()));
                 this.foodCalories = ko.observable(0);
-                this.foodCaloriesFormatted = ko.computed(() => numberFormatter.format(this.foodCalories()));
+                this.foodCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.foodCalories()));
                 this.netCalories = ko.observable(0);
-                this.netCaloriesFormatted = ko.computed(() => numberFormatter.format(this.netCalories()));
+                this.netCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.netCalories()));
 
                 this.hasExerciseData = ko.computed(() => this.exerciseCalories() > 0);
                 this.hasFoodData = ko.computed(() => this.foodCalories() > 0);
@@ -176,6 +226,23 @@
                             foodDiaryViewModel.exerciseCalories(jsonResult.exerciseCalories);
                             foodDiaryViewModel.foodCalories(jsonResult.foodCalories);
                             foodDiaryViewModel.netCalories(jsonResult.netCalories);
+
+                            if (jsonResult.exercise.length) {
+                                jsonResult.exercise.forEach((item) => {
+                                    const updatedItem = {
+                                        ...item,
+                                        formattedLocalStartTime: luxon
+                                            .DateTime
+                                            .fromISO(item.startDateUtc, { zone: 'UTC' })
+                                            .setZone(userTimeZone)
+                                            .toLocaleString({ timeStyle: 'short' }),
+                                        formattedDistance: distanceFormatter.format(item.distance[measurementSystem].amount),
+                                        formattedCalories: calorieFormatter.format(item.calories),
+                                    }
+
+                                    foodDiaryViewModel.exerciseEntries.push(updatedItem);
+                                });
+                            }
                         } else {
                             // handle an error
                         }

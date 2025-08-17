@@ -251,13 +251,13 @@
                     <div class="tab-pane fade show active h-100" id="food_diary_page--add_food_modal_search_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_search_tab" tabindex="0">
                         <div class="d-flex align-items-centers">
                             <div class="btn-group" role="group" aria-label="Search Mode">
-                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-name" autocomplete="off" value="Name" data-bind="checked: addNewFoodEntry.searchMode">
+                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-name" autocomplete="off" value="Name" data-bind="checked: addNewFoodEntry.search.mode">
                                 <label class="btn btn-outline-primary" for="food_diary_page--add_food_modal_search_mode-name">Name</label>
-                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-barcode" autocomplete="off" value="Barcode" data-bind="checked: addNewFoodEntry.searchMode">
+                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-barcode" autocomplete="off" value="Barcode" data-bind="checked: addNewFoodEntry.search.mode">
                                 <label class="btn btn-outline-primary" for="food_diary_page--add_food_modal_search_mode-barcode">Barcode</label>
                             </div>
                             <div class="flex-fill ms-2">
-                                <input class="form-control w-100" type="text" id="food_diary_page--add_food_modal_search_input" data-bind="value: addNewFoodEntry.searchTerm" />
+                                <input class="form-control w-100" type="text" id="food_diary_page--add_food_modal_search_input" data-bind="value: addNewFoodEntry.search.query" />
                             </div>
                             <div class="ms-2">
                                 <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal--search_button">
@@ -409,15 +409,31 @@
                 };
 
                 this.addNewFoodEntry = {
+                    // properties to add new entry
                     meal: ko.observable(''),
                     numServings: ko.observable(1),
                     timeOfDay: ko.observable(''),
-                    searchMode: ko.observable('Name'), // Name or Barcode
-                    searchTerm: ko.observable(''),
-                    isSearching: ko.observable(false),
                     foodId: ko.observable(null),
                     newFood: {
+                        name: ko.observable(''), // string, required
+                        brand: ko.observable(null), // string, optional
+                        barcode: ko.observable(null), // string (though probably all numeric), optional
+                        servingSize: ko.observable(0), // number, required
+                        servingSizeUnit: ko.observable(''), // string, required
+                        calories: ko.observable(0), // number, required
+                        // other nutrition facts are optional
+                        // for now, just doing the more common ones, though the model supports the whole gamut
+                        totalFatGrams: ko.observable(null), // number, optional
+                        saturatedFatGrams: ko.observable(null), // number, optional
 
+                    },
+                    // properties to handle search existing food
+                    search: {
+                        mode: ko.observable('Name'), // Name or Barcode
+                        query: ko.observable(''),
+                        isFetching: ko.observable(false),
+                        hasNoResults: ko.observable(false),
+                        results: ko.observableArray([]),
                     },
                 };
             }
@@ -490,12 +506,12 @@
             }
 
             function searchFoods() {
-                console.log('Search Mode:', foodDiaryViewModel.addNewFoodEntry.searchMode());
-                console.log('Search Term:', foodDiaryViewModel.addNewFoodEntry.searchTerm());
-                foodDiaryViewModel.addNewFoodEntry.isSearching(true);
+                console.log('Search Mode:', foodDiaryViewModel.addNewFoodEntry.search.mode());
+                console.log('Search Term:', foodDiaryViewModel.addNewFoodEntry.search.query());
+                foodDiaryViewModel.addNewFoodEntry.search.isFetching(true);
                 searchFoodsLoadingSpinner.style.display = 'flex';
 
-                fetch(`/api/master-foods?${ foodDiaryViewModel.addNewFoodEntry.searchMode() === "Barcode" ? "barcode" : "query"}=${encodeURIComponent(foodDiaryViewModel.addNewFoodEntry.searchTerm())}`, {
+                fetch(`/api/master-foods?${ foodDiaryViewModel.addNewFoodEntry.search.mode() === "Barcode" ? "barcode" : "query"}=${encodeURIComponent(foodDiaryViewModel.addNewFoodEntry.search.query())}`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -508,13 +524,24 @@
                         console.log('Exercise Tracking Analytics: Search Foods API Call Response JSON Data:', jsonResult);
 
                         if (response.ok) {
+                            if (jsonResult.length) {
+                                jsonResult.forEach((result) => {
+                                    const updatedResult = {
+                                        ...result,
+                                        caloriesFormatted: calorieFormatter.format(result.calories),
+                                    };
 
+                                    foodDiaryViewModel.addNewFoodEntry.search.results.push(updatedResult);
+                                });
+                            } else {
+                                foodDiaryViewModel.addNewFoodEntry.search.hasNoResults(true);
+                            }
                         } else {
                             // handle error
                         }
                     })
                     .finally(() => {
-                        foodDiaryViewModel.addNewFoodEntry.isSearching(false);
+                        foodDiaryViewModel.addNewFoodEntry.search.isFetching(false);
                         searchFoodsLoadingSpinner.style.display = 'none';
                     });
             }
@@ -547,7 +574,7 @@
             });
 
             searchFoodsInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter' && !/^\s*$/.test(foodDiaryViewModel.addNewFoodEntry.searchTerm())) {
+                if (e.key === 'Enter' && !/^\s*$/.test(foodDiaryViewModel.addNewFoodEntry.search.query())) {
                     searchFoods();
                 }
             });

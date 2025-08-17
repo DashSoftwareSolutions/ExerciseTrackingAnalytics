@@ -231,12 +231,12 @@
 @* Add Food Modal *@
 <div class="modal fade" id="food_diary_page--add_food_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="food_diary_page--add_food_modal_title" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable" id="food_diary_page--add_food_modal_dialog">
-        <div class="modal-content">
+        <div class="modal-content container">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="food_diary_page--add_food_modal_title">Add Food</h1>
                 <button type="button" class="btn-close" id="food_diary_page--add_food_modal_header_close_button" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body ps-0">
                 <nav>
                     <ul class="nav nav-tabs" id="food_diary_page--add_food_modal_nav_tabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -247,7 +247,7 @@
                         </li>
                     </ul>
                 </nav>
-                <div class="border-bottom tab-content pt-2" id="food_diary_page--add_food_modal_tab_content" style="height: calc(100vh - 380px)">
+                <div class="border-bottom tab-content pt-3" id="food_diary_page--add_food_modal_tab_content" style="height: calc(100vh - 400px)">
                     <div class="tab-pane fade show active h-100" id="food_diary_page--add_food_modal_search_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_search_tab" tabindex="0">
                         <div class="d-flex align-items-center">
                             <div class="me-2">
@@ -256,7 +256,7 @@
                                 </button>
                             </div>
                             <div class="flex-fill">
-                                <input class="form-control w-100" type="text" id="food_diary_page--add_food_modal_search_input" data-bind="value: addNewFoodEntry.search.query" />
+                                <input class="form-control w-100" type="text" id="food_diary_page--add_food_modal_search_input" data-bind="value: newFoodEntry.search.query" />
                             </div>
                             <div class="ms-2">
                                 <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal--search_button">
@@ -270,48 +270,68 @@
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
-                        <div id="food_diary_page--add_food_modal_search_no_results" data-bind="visible: !addNewFoodEntry.search.isFetching() && addNewFoodEntry.search.hasNoResults()">
+                        <div id="food_diary_page--add_food_modal_search_no_results" class="mt-3" data-bind="visible: !newFoodEntry.search.isFetching() && newFoodEntry.search.hasNoResults()">
                             NO SEARCH RESULTS
                         </div>
-                        <div id="food_diary_page--add_food_modal_search_no_results" data-bind="visible: !addNewFoodEntry.search.isFetching() && addNewFoodEntry.search.results().length > 0">
-                            FOUND IT!
+                        <div id="food_diary_page--add_food_modal_search_results_container" class="mt-3" data-bind="visible: !newFoodEntry.search.isFetching() && newFoodEntry.search.results().length > 0" style="height: calc(100vh - 490px);">
+                            <div id="food_diary_page--add_food_modal_search_results_carousel" class="carousel slide h-100">
+                                <div class="carousel-inner h-100">
+                                    <!-- ko foreach: newFoodEntry.search.results -->
+                                    <div class="carousel-item h-100" data-bind="css: { active: $index() === $root.newFoodEntry.search.resultIndex() }">
+                                        <div class="d-flex justify-content-center h-100">
+                                            <div class="card w-75 h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title" data-bind="text: $data.name"></h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#food_diary_page--add_food_modal_search_results_carousel" data-bs-slide="prev" style="width: unset;">
+                                    <span class="carousel-control-prev-icon bi bi-chevron-left color-body" aria-hidden="true" style="color: #000 !important;"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#food_diary_page--add_food_modal_search_results_carousel" data-bs-slide="next" style="width: unset;">
+                                    <span class="carousel-control-next-icon bi bi-chevron-right color-body" aria-hidden="true" style="color: #000 !important;"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="tab-pane fade h-100" id="food_diary_page--add_food_modal_create_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_create_tab" tabindex="0">
                         ... CREATE ...
                     </div>
                 </div>
-                <div class="mt-3">
-                    <div class="mb-3 container ps-0 pe-0">
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label"># of Servings</label>
-                                <input type="number" class="form-control" id="food_diary_page--add_food_modal_num_servings_input" min="1" data-bind="value: addNewFoodEntry.numServings" />
-                            </div>
-                            <div class="col">
-                                TOTAL CALORIES
-                            </div>
+                <div class="mt-3 mb-3 ps-0 pe-0">
+                    <div class="row mb-2">
+                        <div class="col">
+                            <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label"># of Servings</label>
+                            <input type="number" class="form-control" id="food_diary_page--add_food_modal_num_servings_input" min="1" data-bind="value: newFoodEntry.numServings" />
                         </div>
-                        <div class="row">
-                            <div class="col">
-                                <label for="food_diary_page--add_food_meal_select" class="form-label">Meal</label>
-                                <select class="form-select" aria-label="Meal" data-bind="value: addNewFoodEntry.meal">
-                                    <option selected>Select Meal</option>
-                                    <option value="Breakfast">Breakfast</option>
-                                    <option value="Lunch">Lunch</option>
-                                    <option value="Dinner">Dinner</option>
-                                    <option value="Snack">Snack</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label">Time of Day</label>
-                                <input type="time" class="form-control" id="food_diary_page--add_food_modal_time_of_day_input" data-bind="value: addNewFoodEntry.timeOfDay" />
-                            </div>
+                        <div class="col">
+                            TOTAL CALORIES
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label for="food_diary_page--add_food_meal_select" class="form-label">Meal</label>
+                            <select class="form-select" aria-label="Meal" data-bind="value: newFoodEntry.meal">
+                                <option selected>Select Meal</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="food_diary_page--add_food_modal_num_servings_input" class="form-label">Time of Day</label>
+                            <input type="time" class="form-control" id="food_diary_page--add_food_modal_time_of_day_input" data-bind="value: newFoodEntry.timeOfDay" />
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer position-absolute bottom-0 start-0 w-100">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="food_diary_page--add_food_modal_footer_close_button">Cancel</button>
                 <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal_save_button">Save changes</button>
             </div>
@@ -375,46 +395,48 @@
 
             // Define Knockout View Model
             function FoodDiaryViewModel() {
-                // Top level stats
-                this.exerciseCalories = ko.observable(0);
-                this.exerciseCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.exerciseCalories()));
-                this.foodCalories = ko.observable(0);
-                this.foodCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.foodCalories()));
-                this.netCalories = ko.observable(0);
-                this.netCaloriesFormatted = ko.computed(() => calorieFormatter.format(this.netCalories()));
+                const self = this;
 
-                this.hasExerciseData = ko.computed(() => this.exerciseCalories() > 0);
-                this.hasFoodData = ko.computed(() => this.foodCalories() > 0);
-                this.hasAnyData = ko.computed(() => this.hasExerciseData() || this.hasFoodData());
+                // Top level stats
+                self.exerciseCalories = ko.observable(0);
+                self.exerciseCaloriesFormatted = ko.computed(() => calorieFormatter.format(self.exerciseCalories()));
+                self.foodCalories = ko.observable(0);
+                self.foodCaloriesFormatted = ko.computed(() => calorieFormatter.format(self.foodCalories()));
+                self.netCalories = ko.observable(0);
+                self.netCaloriesFormatted = ko.computed(() => calorieFormatter.format(self.netCalories()));
+
+                self.hasExerciseData = ko.computed(() => self.exerciseCalories() > 0);
+                self.hasFoodData = ko.computed(() => self.foodCalories() > 0);
+                self.hasAnyData = ko.computed(() => self.hasExerciseData() || self.hasFoodData());
 
                 // Specifics
-                this.exerciseEntries = ko.observableArray([]);
+                self.exerciseEntries = ko.observableArray([]);
 
-                this.breakfast = {
+                self.breakfast = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
                 };
 
-                this.lunch = {
+                self.lunch = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
                 };
 
-                this.dinner = {
+                self.dinner = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
                 };
 
-                this.snack = {
+                self.snack = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
                 };
 
-                this.addNewFoodEntry = {
+                self.newFoodEntry = {
                     // properties to add new entry
                     meal: ko.observable(''),
                     numServings: ko.observable(1),
@@ -440,11 +462,16 @@
                         isFetching: ko.observable(false),
                         hasNoResults: ko.observable(false),
                         results: ko.observableArray([]),
+                        resultIndex: ko.observable(0),
                     },
+                };
+
+                self.selectFoodFromSearchResults = (selectedFood) => {
+                    console.log('Selected Food:', selectedFood);
                 };
             }
 
-            let foodDiaryViewModel = new FoodDiaryViewModel();
+            const foodDiaryViewModel = new FoodDiaryViewModel();
 
             function fetchFoodDiaryData() {
                 mainContentContainer.style.display = 'none';
@@ -512,12 +539,18 @@
             }
 
             function searchFoods() {
-                console.log('Search Mode:', foodDiaryViewModel.addNewFoodEntry.search.mode());
-                console.log('Search Term:', foodDiaryViewModel.addNewFoodEntry.search.query());
-                foodDiaryViewModel.addNewFoodEntry.search.isFetching(true);
+                console.log('Search Mode:', foodDiaryViewModel.newFoodEntry.search.mode());
+                console.log('Search Term:', foodDiaryViewModel.newFoodEntry.search.query());
+                
+                // reset view model state pertaining to search
+                foodDiaryViewModel.newFoodEntry.search.isFetching(true);
+                foodDiaryViewModel.newFoodEntry.search.results.removeAll();
+                foodDiaryViewModel.newFoodEntry.search.hasNoResults(false);
+                
+                // show the loading spinner
                 searchFoodsLoadingSpinner.style.display = 'flex';
 
-                fetch(`/api/master-foods?${ foodDiaryViewModel.addNewFoodEntry.search.mode() === "Barcode" ? "barcode" : "query"}=${encodeURIComponent(foodDiaryViewModel.addNewFoodEntry.search.query())}`, {
+                fetch(`/api/master-foods?${ foodDiaryViewModel.newFoodEntry.search.mode() === "Barcode" ? "barcode" : "query"}=${encodeURIComponent(foodDiaryViewModel.newFoodEntry.search.query())}`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -537,17 +570,17 @@
                                         caloriesFormatted: calorieFormatter.format(result.calories),
                                     };
 
-                                    foodDiaryViewModel.addNewFoodEntry.search.results.push(updatedResult);
+                                    foodDiaryViewModel.newFoodEntry.search.results.push(updatedResult);
                                 });
                             } else {
-                                foodDiaryViewModel.addNewFoodEntry.search.hasNoResults(true);
+                                foodDiaryViewModel.newFoodEntry.search.hasNoResults(true);
                             }
                         } else {
                             // handle error
                         }
                     })
                     .finally(() => {
-                        foodDiaryViewModel.addNewFoodEntry.search.isFetching(false);
+                        foodDiaryViewModel.newFoodEntry.search.isFetching(false);
                         searchFoodsLoadingSpinner.style.display = 'none';
                     });
             }
@@ -581,7 +614,7 @@
             });
 
             searchFoodsInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter' && !/^\s*$/.test(foodDiaryViewModel.addNewFoodEntry.search.query())) {
+                if (e.key === 'Enter' && !/^\s*$/.test(foodDiaryViewModel.newFoodEntry.search.query())) {
                     searchFoods();
                 }
             });
@@ -596,8 +629,8 @@
                 html5QrCode.stop().then((ignore) => {
                     // QR Code scanning is stopped.
                     //alert('Stopped scanning');
-                    foodDiaryViewModel.addNewFoodEntry.search.mode('Barcode');
-                    foodDiaryViewModel.addNewFoodEntry.search.query(decodedText);
+                    foodDiaryViewModel.newFoodEntry.search.mode('Barcode');
+                    foodDiaryViewModel.newFoodEntry.search.query(decodedText);
                     searchFoods();
                 }).catch((err) => {
                     // Stop failed, handle it.

@@ -277,11 +277,12 @@
                             <div id="food_diary_page--add_food_modal_search_results_carousel" class="carousel slide h-100">
                                 <div class="carousel-inner h-100">
                                     <!-- ko foreach: newFoodEntry.search.results -->
-                                    <div class="carousel-item h-100" data-bind="css: { active: $index() === $root.newFoodEntry.search.resultIndex() }">
+                                    <div class="carousel-item h-100" data-bind="css: { active: $index() === 0 }">
                                         <div class="d-flex justify-content-center h-100">
                                             <div class="card w-75 h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title" data-bind="text: $data.name"></h5>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -289,11 +290,11 @@
                                     <!-- /ko -->
                                 </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#food_diary_page--add_food_modal_search_results_carousel" data-bs-slide="prev" style="width: unset;">
-                                    <span class="carousel-control-prev-icon bi bi-chevron-left color-body" aria-hidden="true" style="color: #000 !important;"></span>
+                                    <span class="carousel-control-prev-icon bi bi-chevron-left text-body" aria-hidden="true"></span>
                                     <span class="visually-hidden">Previous</span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#food_diary_page--add_food_modal_search_results_carousel" data-bs-slide="next" style="width: unset;">
-                                    <span class="carousel-control-next-icon bi bi-chevron-right color-body" aria-hidden="true" style="color: #000 !important;"></span>
+                                    <span class="carousel-control-next-icon bi bi-chevron-right text-body" aria-hidden="true"></span>
                                     <span class="visually-hidden">Next</span>
                                 </button>
                             </div>
@@ -462,7 +463,6 @@
                         isFetching: ko.observable(false),
                         hasNoResults: ko.observable(false),
                         results: ko.observableArray([]),
-                        resultIndex: ko.observable(0),
                     },
                 };
 

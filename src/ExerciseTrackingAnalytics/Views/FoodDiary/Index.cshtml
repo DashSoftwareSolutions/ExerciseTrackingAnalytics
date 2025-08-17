@@ -230,7 +230,7 @@
 
 @* Add Food Modal *@
 <div class="modal fade" id="food_diary_page--add_food_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="food_diary_page--add_food_modal_title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" id="food_diary_page--add_food_modal_dialog">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable" id="food_diary_page--add_food_modal_dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="food_diary_page--add_food_modal_title">Add Food</h1>
@@ -247,16 +247,15 @@
                         </li>
                     </ul>
                 </nav>
-                <div class="border-bottom tab-content pt-2" id="food_diary_page--add_food_modal_tab_content" style="height: 350px">
+                <div class="border-bottom tab-content pt-2" id="food_diary_page--add_food_modal_tab_content" style="height: calc(100vh - 380px)">
                     <div class="tab-pane fade show active h-100" id="food_diary_page--add_food_modal_search_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_search_tab" tabindex="0">
-                        <div class="d-flex align-items-centers">
-                            <div class="btn-group" role="group" aria-label="Search Mode">
-                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-name" autocomplete="off" value="Name" data-bind="checked: addNewFoodEntry.search.mode">
-                                <label class="btn btn-outline-primary" for="food_diary_page--add_food_modal_search_mode-name">Name</label>
-                                <input type="radio" class="btn-check" name="food_diary_page--add_food_modal_search_mode" id="food_diary_page--add_food_modal_search_mode-barcode" autocomplete="off" value="Barcode" data-bind="checked: addNewFoodEntry.search.mode">
-                                <label class="btn btn-outline-primary" for="food_diary_page--add_food_modal_search_mode-barcode">Barcode</label>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2">
+                                <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal--scan_barcode_button">
+                                    <i class="bi bi-upc-scan fw-bold"></i>
+                                </button>
                             </div>
-                            <div class="flex-fill ms-2">
+                            <div class="flex-fill">
                                 <input class="form-control w-100" type="text" id="food_diary_page--add_food_modal_search_input" data-bind="value: addNewFoodEntry.search.query" />
                             </div>
                             <div class="ms-2">
@@ -265,10 +264,17 @@
                                 </button>
                             </div>
                         </div>
+                        <div id="food_diary_page--add_food_modal_search_barcode_reader" class="w-100"></div>
                         <div id="food_diary_page--add_food_modal_search_loading_spinner" class="flex-row align-items-center justify-content-center h-100" style="margin-top: -34px; display: none !important;">
                             <div class="spinner-border" role="status" style="width: 5rem; height: 5rem;">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
+                        </div>
+                        <div id="food_diary_page--add_food_modal_search_no_results" data-bind="visible: !addNewFoodEntry.search.isFetching() && addNewFoodEntry.search.hasNoResults()">
+                            NO SEARCH RESULTS
+                        </div>
+                        <div id="food_diary_page--add_food_modal_search_no_results" data-bind="visible: !addNewFoodEntry.search.isFetching() && addNewFoodEntry.search.results().length > 0">
+                            FOUND IT!
                         </div>
                     </div>
                     <div class="tab-pane fade h-100" id="food_diary_page--add_food_modal_create_tab_pane" role="tabpanel" aria-labelledby="food_diary_page--add_food_modal_create_tab" tabindex="0">
@@ -305,7 +311,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer position-absolute bottom-0 start-0 w-100">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="food_diary_page--add_food_modal_footer_close_button">Cancel</button>
                 <button type="button" class="btn btn-primary" id="food_diary_page--add_food_modal_save_button">Save changes</button>
             </div>
@@ -358,7 +364,7 @@
             const loadingSpinner = document.getElementById('food_diary_page--loading_spinner');
             const mainContentContainer = document.getElementById('food_diary_page--main_content_container');
             const searchFoodsLoadingSpinner = document.getElementById('food_diary_page--add_food_modal_search_loading_spinner');
-            
+
             const userTimeZone = new luxon.SystemZone().name;
             console.log('User Time Zone:', userTimeZone);
             const locale = 'en-US'; // TODO: Make it user-selectable / settable by preferences, etc.
@@ -389,7 +395,7 @@
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
                     foods: ko.observableArray([]),
                 };
-                
+
                 this.lunch = {
                     totalCalories: ko.observable(0),
                     totalCaloriesFormatted: ko.observable(calorieFormatter.format(0)),
@@ -554,6 +560,7 @@
 
             // Handle Add Food Modal and Save Button
             const addFoodButton = document.getElementById('food_diary_page--add_food_button');
+            const scanBarcodeButton = document.getElementById('food_diary_page--add_food_modal--scan_barcode_button');
             const searchFoodsButton = document.getElementById('food_diary_page--add_food_modal--search_button');
             const searchFoodsInput = document.getElementById('food_diary_page--add_food_modal_search_input');
             const syncActivitiesButton = document.getElementById('food_diary_page--sync-activities_button');
@@ -579,13 +586,40 @@
                 }
             });
 
+            const html5QrCode = new Html5Qrcode('food_diary_page--add_food_modal_search_barcode_reader');
+
+            function onScanSuccess(decodedText, decodedResult) {
+                // handle the scanned code as you like, for example:
+                console.log(`Code matched = ${decodedText}`, decodedResult);
+                //alert(`Code matched = ${decodedText}`);
+
+                html5QrCode.stop().then((ignore) => {
+                    // QR Code scanning is stopped.
+                    //alert('Stopped scanning');
+                    foodDiaryViewModel.addNewFoodEntry.search.mode('Barcode');
+                    foodDiaryViewModel.addNewFoodEntry.search.query(decodedText);
+                    searchFoods();
+                }).catch((err) => {
+                    // Stop failed, handle it.
+                    console.error('Failed to stop the Barcode Scanner:', err);
+                    //alert(`Failed to stop the Barcode Scanner: ${err}`);
+                });
+            }
+
+            scanBarcodeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Clicked scan barcode!');
+                const config = { fps: 10, qrbox: { width: 500, height: 250 } };
+                html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess);
+            });
+
             saveNewFoodButton.addEventListener('click', (e) => {
                 console.log('Save it!');
                 saveNewFoodButton.blur();
                 addFoodModal.hide();
 
                 // TODO: Save new food
-                
+
                 fetchFoodDiaryData(); // move this to the callback after we've saved
             });
 

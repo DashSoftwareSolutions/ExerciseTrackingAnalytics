@@ -282,7 +282,10 @@
                                             <div class="card w-75 h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title" data-bind="text: $data.name"></h5>
-
+                                                    <p class="card-text">
+                                                        <span>Serving Size:</span>&nbsp;<span data-bind="text: `${$data.servingSize} ${$data.servingSizeUnit}`"></span><br />
+                                                        <span>Calories Per Serving:</span>&nbsp;<span data-bind="text: $data.caloriesFormatted"></span>
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
